@@ -2,16 +2,16 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springframework.security.oauth</groupId>
-		<artifactId>spring-security-oauth-parent</artifactId>
-		<version>1.0.2.BUILD-SNAPSHOT</version>
-		<relativePath>..</relativePath>
-	</parent>
+    <parent>
+        <groupId>com.nimble.security.oauth</groupId>
+        <artifactId>nimble-security-oauth-parent</artifactId>
+        <version>0.0.1.BUILD-SNAPSHOT</version>
+        <relativePath>..</relativePath>
+    </parent>
 
-	<artifactId>sparklr2</artifactId>
-	<packaging>war</packaging>
-	<name>OAuth for Spring Security - Sparklr2 (OAuth 2 Provider Example)</name>
+    <artifactId>auth-server</artifactId>
+    <packaging>war</packaging>
+    <name>OAuth using Spring Security - OAuth 2 Authentication Server</name>
 
 	<profiles>
 		<profile>
@@ -100,11 +100,11 @@
 	</repositories>
 
 	<dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>spring-security-oauth2</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.security.oauth</groupId>
+            <artifactId>spring-security-oauth2</artifactId>
+            <version>${spring.security.oauth.version}</version>
+        </dependency>
 
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -146,7 +146,7 @@
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.8.3</version>
+			<version>${codehaus.jackson.mapper.version}</version>
 		</dependency>
 
 		<dependency>
@@ -158,20 +158,20 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
-			<version>2.3</version>
+			<version>${servlet.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>jstl</artifactId>
-			<version>1.2</version>
+			<version>${servlet.jstl.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 

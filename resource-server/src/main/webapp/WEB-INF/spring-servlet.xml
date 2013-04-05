@@ -11,18 +11,20 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 
 	<http access-denied-page="/login.jsp?authorization_error=true" xmlns="http://www.springframework.org/schema/security">
-		<intercept-url pattern="/api/v1/**" access="permitAll" />
-		<intercept-url pattern="/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-
+		<!--<intercept-url pattern="/api/v1/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />-->
+		<intercept-url pattern="/api/v1/**" access="permitAll"/>
+		<!--<intercept-url pattern="/facebook/**" access="ROLE_USER" />-->
+		<!--<intercept-url pattern="/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+-->
 		<form-login authentication-failure-url="/login.jsp?authentication_error=true" default-target-url="/index.jsp"
 			login-page="/login.jsp" login-processing-url="/login.do" />
 		<logout logout-success-url="/index.jsp" logout-url="/logout.do" />
-		<anonymous />
-		<custom-filter ref="oauth2ResourceFilter" before="PRE_AUTH_FILTER" />
+		 <custom-filter ref="oauth2ProviderFilter" before="PRE_AUTH_FILTER" />
 	</http>
 
 	<authentication-manager xmlns="http://www.springframework.org/schema/security">
 		<authentication-provider>
+
 			<user-service>
 				<user name="marissa" password="wombat" authorities="ROLE_USER" />
 				<user name="sam" password="kangaroo" authorities="ROLE_USER" />
@@ -30,24 +32,56 @@
 		</authentication-provider>
 	</authentication-manager>
 
-	<!--apply the oauth resource context -->
-    <oauth:resource-server id="oauth2ResourceFilter" />
+    <!--<oauth:resource-server id="oauth2ProviderFilter" token-services-ref="tokenServices" />-->
 
-	<!--define an oauth 2 resource for sparklr -->
+    <!-- Choose to extend the logic of the default resource server filter.  Could've also created another filter to put in
+        front of this one to keep the logic clean -->
+    <!--<bean id="customOauth2ProviderFilter" class="com.nimble.security.oauth.provider.authentication.OAuth2ValidationProcessingFilter">
+        <property name="tokenRequired" value="true"/>
+        <property name="authenticationManager" ref="oAuth2AuthenticationManager"/>
+    </bean>-->
+
+    <oauth:resource-server id="oauth2ProviderFilter" token-services-ref="tokenServices"/>
+
+    <bean id="oAuth2AuthenticationManager" class="org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager">
+        <property name="tokenServices" ref="tokenServices"/>
+    </bean>
+
+
+    <bean id="tokenServices" class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
+        <property name="tokenStore" ref="jdbcTokenStore"/>
+    </bean>
+
+    <bean id="jdbcTokenStore" class="org.springframework.security.oauth2.provider.token.JdbcTokenStore">
+        <constructor-arg ref="oAuthDataSource"/>
+    </bean>
+
+    <!-- TODO: replace this with a JNDI datasource.  This is just for quick testing. -->
+    <bean id="oAuthDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3306/oauth" />
+        <property name="username" value="root" />
+        <property name="password" value="bv" />
+    </bean>
+
+	<!--apply the oauth client context -->
+	<!--<oauth:client id="oauth2ClientFilter" />-->
+
+	<!--define an oauth 2 resource for Nimble API -->
 	<oauth:resource id="nimble-api" type="authorization_code" client-id="nmbl" client-secret="secret"
 		access-token-uri="${accessTokenUri}" user-authorization-uri="${userAuthorizationUri}" scope="read,write" />
 
-	<!--define an oauth 2 resource for trusted client on sparklr -->
-	<oauth:resource id="trusted" type="client_credentials" client-id="my-client-with-registered-redirect"
+	<!--define an oauth 2 resource for trusted client on nimble -->
+	<!--<oauth:resource id="trusted" type="client_credentials" client-id="my-client-with-registered-redirect"
 		access-token-uri="${accessTokenUri}" scope="trust" />
-
+-->
 	<!--define an oauth 2 resource for facebook. according to the facebook docs, the 'client-id' is the App ID, and the 'client-secret' 
 		is the App Secret -->
-	<oauth:resource id="facebook" type="authorization_code" client-id="233668646673605" client-secret="33b17e044ee6a4fa383f46ec6e28ea1d"
+	<!--<oauth:resource id="facebook" type="authorization_code" client-id="233668646673605" client-secret="33b17e044ee6a4fa383f46ec6e28ea1d"
 		authentication-scheme="query" access-token-uri="https://graph.facebook.com/oauth/access_token" user-authorization-uri="https://www.facebook.com/dialog/oauth"
-		token-name="oauth_token" client-authentication-scheme="form" />
+		token-name="oauth_token" client-authentication-scheme="form" />-->
 
-	<context:property-placeholder location="classpath:/sparklr.properties" />
+	<context:property-placeholder location="classpath:/nimble-resource.properties" />
 
 	<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
 		<property name="converters">
@@ -76,52 +110,70 @@
 		</property>
 	</bean>
 
-	<!--Basic application beans. -->
+    <bean id="simpleUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <!-- user -->
+                <prop key="/api/v1/*">proxyController</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!--Basic application beans. -->
 	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/jsp/" />
 		<property name="suffix" value=".jsp" />
 	</bean>
 
-	<bean id="sparklrController" class="org.springframework.security.oauth.examples.tonr.mvc.SparklrController">
+	<!--<bean id="sparklrController" class="org.springframework.security.oauth.examples.tonr.mvc.SparklrController">
 		<property name="sparklrService" ref="sparklrService" />
 	</bean>
 
-	<bean id="facebookController" class="org.springframework.security.oauth.examples.tonr.mvc.FacebookController">
-		<property name="facebookRestTemplate">
-			<oauth:rest-template resource="facebook">
-				<property name="messageConverters">
-					<list>
-						<bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
-							<property name="supportedMediaTypes">
-								<list>
-									<bean class="org.springframework.http.MediaType">
-										<!--facebook sends its json as text/javascript for some reason -->
-										<constructor-arg value="text" />
-										<constructor-arg value="javascript" />
-									</bean>
-									<bean class="org.springframework.http.MediaType">
-										<constructor-arg value="application" />
-										<constructor-arg value="json" />
-									</bean>
-								</list>
-							</property>
-						</bean>
-					</list>
-				</property>
+    <bean id="facebookController" class="org.springframework.security.oauth.examples.tonr.mvc.FacebookController">
+        <property name="facebookRestTemplate">
+            <oauth:rest-template resource="facebook">
+                <property name="messageConverters">
+                    <list>
+                        <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+                            <property name="supportedMediaTypes">
+                                <list>
+                                    <bean class="org.springframework.http.MediaType">
+                                        &lt;!&ndash;facebook sends its json as text/javascript for some reason &ndash;&gt;
+                                        <constructor-arg value="text" />
+                                        <constructor-arg value="javascript" />
+                                    </bean>
+                                    <bean class="org.springframework.http.MediaType">
+                                        <constructor-arg value="application" />
+                                        <constructor-arg value="json" />
+                                    </bean>
+                                </list>
+                            </property>
+                        </bean>
+                    </list>
+                </property>
+            </oauth:rest-template>
+        </property>
+    </bean>-->
+
+	<bean id="proxyController" class="com.nimble.security.oauth.mvc.ProxyController">
+		<property name="restOperations">
+			<oauth:rest-template resource="nimble-api">
+
 			</oauth:rest-template>
 		</property>
+        <property name="targetDomain" value="http://bvdev.nimble.com"/>
 	</bean>
 
-	<bean id="sparklrService" class="org.springframework.security.oauth.examples.tonr.impl.SparklrServiceImpl">
+	<!--<bean id="sparklrService" class="org.springframework.security.oauth.examples.tonr.impl.SparklrServiceImpl">
 		<property name="sparklrPhotoListURL" value="${sparklrPhotoListURL}" />
 		<property name="sparklrTrustedMessageURL" value="${sparklrTrustedMessageURL}" />
 		<property name="sparklrPhotoURLPattern" value="${sparklrPhotoURLPattern}" />
 		<property name="sparklrRestTemplate">
-			<oauth:rest-template resource="sparklr" />
+			<oauth:rest-template resource="nimble-api" />
 		</property>
 		<property name="trustedClientRestTemplate">
 			<oauth:rest-template resource="trusted" />
 		</property>
-	</bean>
+	</bean>-->
 
 </beans>
