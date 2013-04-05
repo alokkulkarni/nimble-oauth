@@ -11,15 +11,14 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 
 	<http access-denied-page="/login.jsp?authorization_error=true" xmlns="http://www.springframework.org/schema/security">
-		<intercept-url pattern="/sparklr/**" access="ROLE_USER" />
-		<intercept-url pattern="/facebook/**" access="ROLE_USER" />
+		<intercept-url pattern="/api/v1/**" access="permitAll" />
 		<intercept-url pattern="/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
 
 		<form-login authentication-failure-url="/login.jsp?authentication_error=true" default-target-url="/index.jsp"
 			login-page="/login.jsp" login-processing-url="/login.do" />
 		<logout logout-success-url="/index.jsp" logout-url="/logout.do" />
 		<anonymous />
-		<custom-filter ref="oauth2ClientFilter" after="EXCEPTION_TRANSLATION_FILTER" />
+		<custom-filter ref="oauth2ResourceFilter" before="PRE_AUTH_FILTER" />
 	</http>
 
 	<authentication-manager xmlns="http://www.springframework.org/schema/security">
@@ -31,11 +30,11 @@
 		</authentication-provider>
 	</authentication-manager>
 
-	<!--apply the oauth client context -->
-	<oauth:client id="oauth2ClientFilter" />
+	<!--apply the oauth resource context -->
+    <oauth:resource-server id="oauth2ResourceFilter" />
 
 	<!--define an oauth 2 resource for sparklr -->
-	<oauth:resource id="sparklr" type="authorization_code" client-id="tonr" client-secret="secret"
+	<oauth:resource id="nimble-api" type="authorization_code" client-id="nmbl" client-secret="secret"
 		access-token-uri="${accessTokenUri}" user-authorization-uri="${userAuthorizationUri}" scope="read,write" />
 
 	<!--define an oauth 2 resource for trusted client on sparklr -->

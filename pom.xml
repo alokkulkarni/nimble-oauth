@@ -14,9 +14,13 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring.version>3.1.2.RELEASE</spring.version>
+    <spring.version>3.2.0.RELEASE</spring.version>
     <spring.security.oauth.version>1.0.2.RELEASE</spring.security.oauth.version>
-    <spring.security.version>3.1.3.RELEASE</spring.security.version>
+    <spring.security.version>3.2.0.M1</spring.security.version>
+    <codehaus.jackson.mapper.version>1.8.3</csecurity.version>
+    <junit.version>4.8.2</junit.version>
+    <servlet.api.version>2.3</servlet.api.version>
+    <servlet.jstl.version>1.2</servlet.jstl.version>
 	<spring.osgi.range>[3.1.0,4.0.0)</spring.osgi.range>
 	<security.osgi.range>[3.1.0,4.0.0)</security.osgi.range>
 	<skipTests>True</skipTests>
