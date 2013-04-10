@@ -3,23 +3,24 @@
 	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:sec="http://www.springframework.org/schema/security"
 	xmlns:oauth="http://www.springframework.org/schema/security/oauth2" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:aop="http://www.springframework.org/schema/aop"
-	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
 		http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd
-		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
 		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
-	<http access-denied-page="/login.jsp?authorization_error=true" xmlns="http://www.springframework.org/schema/security">
+	<http access-denied-page="/login.jsp?authorization_error=true" use-expressions="true" xmlns="http://www.springframework.org/schema/security">
 		<!--<intercept-url pattern="/api/v1/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />-->
 		<intercept-url pattern="/api/v1/**" access="permitAll"/>
 		<!--<intercept-url pattern="/facebook/**" access="ROLE_USER" />-->
-		<!--<intercept-url pattern="/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
--->
+		<intercept-url pattern="/**" access="hasAnyAuthority" />
+
 		<form-login authentication-failure-url="/login.jsp?authentication_error=true" default-target-url="/index.jsp"
 			login-page="/login.jsp" login-processing-url="/login.do" />
 		<logout logout-success-url="/index.jsp" logout-url="/logout.do" />
-		 <custom-filter ref="oauth2ProviderFilter" before="PRE_AUTH_FILTER" />
+        <custom-filter ref="tokenRequiredFilter" after="LOGOUT_FILTER" />
+		<custom-filter ref="oauth2ProviderFilter" before="PRE_AUTH_FILTER" />
 	</http>
 
 	<authentication-manager xmlns="http://www.springframework.org/schema/security">
@@ -47,6 +48,10 @@
         <property name="tokenServices" ref="tokenServices"/>
     </bean>
 
+    <bean id="tokenRequiredFilter" class="com.nimble.security.oauth.provider.authentication.TokenRequiredFilter" />
+
+    <bean id="authEntryPoint" class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
+            </bean>
 
     <bean id="tokenServices" class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
         <property name="tokenStore" ref="jdbcTokenStore"/>
@@ -100,10 +105,9 @@
 	</mvc:annotation-driven>
 
 	<bean id="contentViewResolver" class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
-		<property name="mediaTypes">
-			<map>
-				<entry key="json" value="application/json" />
-			</map>
+		<property name="contentNegotiationManager">
+            <bean class="org.springframework.web.accept.ContentNegotiationManager">
+            </bean>
 		</property>
 		<property name="defaultViews">
 			<bean class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" />
