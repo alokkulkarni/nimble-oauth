@@ -75,11 +75,11 @@
 	</http>
 
 	<bean id="oauthAuthenticationEntryPoint" class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
-		<property name="realmName" value="sparklr2" />
+		<property name="realmName" value="nimble" />
 	</bean>
 
 	<bean id="clientAuthenticationEntryPoint" class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
-		<property name="realmName" value="sparklr2/client" />
+		<property name="realmName" value="nimble/client" />
 		<property name="typeName" value="Basic" />
 	</bean>
 
@@ -104,38 +104,40 @@
 	</authentication-manager>
 
 	<authentication-manager alias="authenticationManager" xmlns="http://www.springframework.org/schema/security">
-		<authentication-provider>
-			<user-service id="userDetailsService">
-				<user name="marissa" password="koala" authorities="ROLE_USER" />
-				<user name="paul" password="emu" authorities="ROLE_USER" />
-			</user-service>
-		</authentication-provider>
+		<authentication-provider ref="authenticationProvider" />
 	</authentication-manager>
+
+    <bean id="authenticationProvider" class="com.nimble.security.authentication.rest.RestDelegatingAuthenticationProvider" >
+        <property name="createSessionEndpointUrl" value="https://app.nimble.com/api/sessions"/>
+    </bean>
 
 	<bean id="clientDetailsUserService" class="org.springframework.security.oauth2.provider.client.ClientDetailsUserDetailsService">
 		<constructor-arg ref="clientDetails" />
 	</bean>
 
-	<bean id="tokenStore" class="org.springframework.security.oauth2.provider.token.InMemoryTokenStore" />
+
+    <bean id="jdbcTokenStore" class="org.springframework.security.oauth2.provider.token.JdbcTokenStore">
+        <constructor-arg ref="oAuthDataSource"/>
+    </bean>
+
 
 	<bean id="tokenServices" class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
-		<property name="tokenStore" ref="tokenStore" />
+        <property name="tokenStore" ref="jdbcTokenStore"/>
 		<property name="supportRefreshToken" value="true" />
 		<property name="clientDetailsService" ref="clientDetails" />
 	</bean>
 
-	<bean id="userApprovalHandler" class="org.springframework.security.oauth.examples.sparklr.oauth.SparklrUserApprovalHandler">
-		<property name="autoApproveClients">
-			<set>
-				<value>my-less-trusted-autoapprove-client</value>
-			</set>
-		</property>
-		<property name="tokenServices" ref="tokenServices" />
-	</bean>
+	<bean id="userApprovalHandler" class="org.springframework.security.oauth2.provider.approval.TokenServicesUserApprovalHandler">
+        <property name="tokenServices" ref="tokenServices" />
+    </bean>
+
+    <bean id="authorizationCodeServices" class="org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices">
+        <constructor-arg name="dataSource" ref="oAuthDataSource"/>
+    </bean>
 
 	<oauth:authorization-server client-details-service-ref="clientDetails" token-services-ref="tokenServices"
 		user-approval-handler-ref="userApprovalHandler">
-		<oauth:authorization-code />
+		<oauth:authorization-code authorization-code-services-ref="authorizationCodeServices" />
 		<oauth:implicit />
 		<oauth:refresh-token />
 		<oauth:client-credentials />
@@ -144,7 +146,11 @@
 
 	<oauth:resource-server id="resourceServerFilter" resource-id="sparklr" token-services-ref="tokenServices" />
 
-	<oauth:client-details-service id="clientDetails">
+    <bean id="clientDetails" class="org.springframework.security.oauth2.provider.JdbcClientDetailsService">
+        <constructor-arg name="dataSource" ref="oAuthDataSource" />
+    </bean>
+
+	<!--<oauth:client-details-service id="clientDetails">
 		<oauth:client client-id="my-trusted-client" authorized-grant-types="password,authorization_code,refresh_token,implicit"
 			authorities="ROLE_CLIENT, ROLE_TRUSTED_CLIENT" scope="read,write,trust" access-token-validity="60" />
 		<oauth:client client-id="my-trusted-client-with-secret" authorized-grant-types="password,authorization_code,refresh_token,implicit"
@@ -161,7 +167,7 @@
 			authorities="ROLE_CLIENT" redirect-uri="http://anywhere" scope="read" />
 		<oauth:client client-id="tonr" resource-ids="sparklr" authorized-grant-types="authorization_code,implicit"
 			authorities="ROLE_CLIENT" scope="read,write" secret="secret" />
-	</oauth:client-details-service>
+	</oauth:client-details-service>-->
 
 	<mvc:annotation-driven />
 
@@ -212,7 +218,7 @@
 	</bean>-->
 
 	<bean id="photoServiceUserController" class="org.springframework.security.oauth.examples.sparklr.mvc.PhotoServiceUserController">
-		<property name="userDetailsService" ref="userDetailsService" />
+		<property name="userDetailsService" ref="authenticationProvider" />
 	</bean>
 
 	<bean id="adminController" class="org.springframework.security.oauth.examples.sparklr.mvc.AdminController">

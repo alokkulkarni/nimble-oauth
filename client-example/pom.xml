@@ -97,13 +97,13 @@
 
 	<dependencies>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>${pom.groupId}</groupId>
 			<artifactId>sparklr2</artifactId>
 			<version>${pom.version}</version>
 			<type>war</type>
 			<scope>tomcat</scope>
-		</dependency>
+		</dependency>-->
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>

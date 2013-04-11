@@ -13,6 +13,8 @@ import org.springframework.security.oauth.examples.sparklr.oauth.SparklrUserAppr
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.approval.TokenServicesUserApprovalHandler;
+import org.springframework.security.oauth2.provider.approval.UserApprovalHandler;
 import org.springframework.security.oauth2.provider.token.ConsumerTokenServices;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,18 +33,18 @@ public class AdminController {
 
 	private ConsumerTokenServices tokenServices;
 
-	private SparklrUserApprovalHandler userApprovalHandler;
+	private UserApprovalHandler userApprovalHandler;
 
 	@RequestMapping("/oauth/cache_approvals")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void startCaching() throws Exception {
-		userApprovalHandler.setUseTokenServices(true);
+		//userApprovalHandler.setUseTokenServices(true);
 	}
 
 	@RequestMapping("/oauth/uncache_approvals")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void stopCaching() throws Exception {
-		userApprovalHandler.setUseTokenServices(false);
+		//userApprovalHandler.setUseTokenServices(false);
 	}
 
 	@RequestMapping("/oauth/users/{user}/tokens")
@@ -98,7 +100,7 @@ public class AdminController {
 	/**
 	 * @param userApprovalHandler the userApprovalHandler to set
 	 */
-	public void setUserApprovalHandler(SparklrUserApprovalHandler userApprovalHandler) {
+	public void setUserApprovalHandler(UserApprovalHandler userApprovalHandler) {
 		this.userApprovalHandler = userApprovalHandler;
 	}
 
