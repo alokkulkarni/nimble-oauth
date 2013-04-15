@@ -1,22 +1,24 @@
-package com.nimble.security.oauth.mvc;
+package com.nimble.mvc;
 
+import com.nimble.security.core.userdetails.NimbleUser;
 import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -50,8 +52,9 @@ public class ProxyController {
 		return "nimble-api";
 	}
 
-	public void setRestOperations(OAuth2RestTemplate restOperations) {
+	public void setRestOperations(RestTemplate restOperations) {
 		this.restOperations = restOperations;
+
 	}
 
     public void setTargetDomain(String targetDomain) {
@@ -64,6 +67,17 @@ public class ProxyController {
         while(headerNames.hasMoreElements()) {
             String headerName = (String)headerNames.nextElement();
             headers.add(headerName, request.getHeader(headerName));
+        }
+        //need to add the Nimble token header
+        SecurityContext ctx = SecurityContextHolder.getContext();
+        if(ctx != null) {
+            //should not be here if this is null;
+            Authentication auth = ctx.getAuthentication();
+            NimbleUser user = (NimbleUser) auth.getPrincipal();
+            if(user != null) {
+                //it should never be the case that we do not get here.  Checks are done via security configuration
+                headers.add("Authorization", "Nimble token=\""+user.getNimbleToken()+"\"");
+            }
         }
         return headers;
     }

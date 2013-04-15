@@ -212,8 +212,13 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.driver.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>3.2.0.RELEASE</version>
+        </dependency>
 
 
-	</dependencies>
+    </dependencies>
 
 </project>

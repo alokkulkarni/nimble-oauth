@@ -21,6 +21,23 @@
 		<access-denied-handler ref="oauthAccessDeniedHandler" />
 	</http>
 
+    <!-- The OAuth2 protected resources are separated out into their own block so we can deal with authorization and error handling
+		separately. This isn't mandatory, but it makes it easier to control the behaviour. -->
+    <http pattern="/api/v1/.*" request-matcher="regex" create-session="stateless" entry-point-ref="oauthAuthenticationEntryPoint"
+          use-expressions="true" xmlns="http://www.springframework.org/schema/security">
+        <anonymous enabled="false" />
+        <!--<intercept-url pattern="/api/v1/.*"
+                       access="#oauth2.clientHasRole('ROLE_CLIENT') and (#oauth2.isClient()) and (#oauth2.hasScope('write') or #oauth2.hasScope('read'))"
+                       />-->
+        <intercept-url pattern="/api/v1/.*"
+                       access="#oauth2.clientHasRole('CLIENT') and (#oauth2.hasScope('write') or #oauth2.hasScope('read'))"
+                />
+        <intercept-url pattern="/**" access="denyAll()"/>
+        <custom-filter ref="resourceServerFilter" before="PRE_AUTH_FILTER" />
+        <access-denied-handler ref="oauthAccessDeniedHandler" />
+        <expression-handler ref="oauthWebExpressionHandler" />
+    </http>
+
 	<!-- The OAuth2 protected resources are separated out into their own block so we can deal with authorization and error handling 
 		separately. This isn't mandatory, but it makes it easier to control the behaviour. -->
 	<http pattern="/oauth/(users|clients)/.*" request-matcher="regex" create-session="stateless" entry-point-ref="oauthAuthenticationEntryPoint"
@@ -154,6 +171,18 @@
     <bean id="clientDetails" class="org.springframework.security.oauth2.provider.JdbcClientDetailsService">
         <constructor-arg name="dataSource" ref="oAuthDataSource" />
     </bean>
+
+    <bean id="proxyController" class="com.nimble.mvc.ProxyController">
+        <property name="restOperations">
+            <bean class="org.springframework.web.client.RestTemplate">
+               <property name="requestFactory">
+                   <bean class="com.nimble.http.client.GZipClientHttpRequestFactory" />
+               </property>
+            </bean>
+        </property>
+        <property name="targetDomain" value="https://app.nimble.com"/>
+    </bean>
+
 
 	<!--<oauth:client-details-service id="clientDetails">
 		<oauth:client client-id="my-trusted-client" authorized-grant-types="password,authorization_code,refresh_token,implicit"
