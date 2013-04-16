@@ -12,29 +12,37 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
-import java.util.Enumeration;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
  */
 @Controller
 public class ProxyController {
+    private Set<String> headersToStrip;
     private String targetDomain;
 	private RestOperations restOperations;
 
     public ProxyController() {
-
+        headersToStrip = new HashSet<String>();
+        headersToStrip.add("Content-Encoding");
+        setHeadersToStrip(headersToStrip);
     }
 
-	@RequestMapping("/api/v1/**")
-	public String photos(HttpServletRequest request, Model model) throws Exception {
+    public void setHeadersToStrip(Set<String> headersToStrip) {
+        this.headersToStrip = headersToStrip;
+    }
+
+    @RequestMapping("/api/v1/**")
+	public ResponseEntity<ObjectNode> proxy(HttpServletRequest request, Model model) throws Exception {
         String url = targetDomain + request.getServletPath();
 
         //extract the request body - assuming only string data being to be supported.
@@ -48,8 +56,18 @@ public class ProxyController {
         HttpEntity<String> reqEntity = new HttpEntity<String>(sb.toString(), extractHeaders(request));
 
         ResponseEntity<ObjectNode> responseEntity = restOperations.exchange(url, HttpMethod.valueOf(request.getMethod()), reqEntity, ObjectNode.class);
-        model.addAttribute("data", responseEntity);
-		return "nimble-api";
+
+        //now need to omit certain headers that no longer apply
+        MultiValueMap<String, String> newHeaders = new LinkedMultiValueMap<String, String>();
+        for(Map.Entry<String, List<String>> entry : responseEntity.getHeaders().entrySet()) {
+            if(!headersToStrip.contains(entry.getKey())) {
+                newHeaders.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        ResponseEntity<ObjectNode> proxyResp = new ResponseEntity<ObjectNode>(responseEntity.getBody(), newHeaders, responseEntity.getStatusCode());
+
+		return proxyResp;
 	}
 
 	public void setRestOperations(RestTemplate restOperations) {
