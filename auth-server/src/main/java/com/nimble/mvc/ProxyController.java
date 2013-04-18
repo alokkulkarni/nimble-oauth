@@ -1,6 +1,8 @@
 package com.nimble.mvc;
 
 import com.nimble.security.core.userdetails.NimbleUser;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
+import java.net.URI;
 import java.util.*;
 
 /**
@@ -27,13 +30,18 @@ import java.util.*;
  */
 @Controller
 public class ProxyController {
+    protected Log logger = LogFactory.getLog(getClass());
     private Set<String> headersToStrip;
+    private Set<String> forwardHeadersToStrip;
     private String targetDomain;
 	private RestOperations restOperations;
 
     public ProxyController() {
         headersToStrip = new HashSet<String>();
+        forwardHeadersToStrip = new HashSet<String>();
         headersToStrip.add("Content-Encoding");
+        //want to strip authorization since changing the method
+        forwardHeadersToStrip.add("authorization");
         setHeadersToStrip(headersToStrip);
     }
 
@@ -43,7 +51,10 @@ public class ProxyController {
 
     @RequestMapping("/api/v1/**")
 	public ResponseEntity<ObjectNode> proxy(HttpServletRequest request, Model model) throws Exception {
-        String url = targetDomain + request.getServletPath();
+        String orig = request.getQueryString();
+
+        String url = targetDomain + request.getServletPath() + "?" + orig;
+        logger.debug("URL: "+url);
 
         //extract the request body - assuming only string data being to be supported.
         BufferedReader bufferedReader = request.getReader();
@@ -54,9 +65,9 @@ public class ProxyController {
         }
 
         HttpEntity<String> reqEntity = new HttpEntity<String>(sb.toString(), extractHeaders(request));
-
-        ResponseEntity<ObjectNode> responseEntity = restOperations.exchange(url, HttpMethod.valueOf(request.getMethod()), reqEntity, ObjectNode.class);
-
+        ResponseEntity<ObjectNode> responseEntity = null;
+        URI uri = new URI(url);
+        responseEntity = restOperations.exchange(uri, HttpMethod.valueOf(request.getMethod()), reqEntity, ObjectNode.class);
         //now need to omit certain headers that no longer apply
         MultiValueMap<String, String> newHeaders = new LinkedMultiValueMap<String, String>();
         for(Map.Entry<String, List<String>> entry : responseEntity.getHeaders().entrySet()) {
@@ -84,7 +95,9 @@ public class ProxyController {
         Enumeration headerNames = request.getHeaderNames();
         while(headerNames.hasMoreElements()) {
             String headerName = (String)headerNames.nextElement();
-            headers.add(headerName, request.getHeader(headerName));
+            if(!forwardHeadersToStrip.contains(headerName.toLowerCase())) {
+                headers.add(headerName, request.getHeader(headerName));
+            }
         }
         //need to add the Nimble token header
         SecurityContext ctx = SecurityContextHolder.getContext();
