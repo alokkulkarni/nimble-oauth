@@ -11,11 +11,14 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
     <!-- TODO: replace this with a JNDI datasource.  This is just for quick testing. -->
-    <bean id="oAuthDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <!--<bean id="oAuthDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver" />
         <property name="url" value="jdbc:mysql://localhost:3306/oauth" />
         <property name="username" value="root" />
         <property name="password" value="bv" />
+    </bean>-->
+    <bean id="oAuthDataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="java:comp/env/jdbc/oAuthDB"/>
     </bean>
 
 </beans>
