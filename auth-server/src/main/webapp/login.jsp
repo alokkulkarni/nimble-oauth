@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title>Sparklr</title>
+<title>Nimble</title>
 <link type="text/css" rel="stylesheet"
 	href="<c:url value="/style.css"/>" />
 </head>
@@ -27,14 +27,12 @@
 
 		<h2>Login</h2>
 
-		<p>We've got a grand total of 2 users: marissa and paul. Go ahead
-			and log in. Marissa's password is "koala" and Paul's password is
-			"emu".</p>
+
 		<form id="loginForm" name="loginForm"
 			action="<c:url value="/login.do"/>" method="post">
 			<p>
 				<label>Username: <input type='text' name='j_username'
-					value="marissa" /></label>
+					value="" /></label>
 			</p>
 			<p>
 				<label>Password: <input type='text' name='j_password'
@@ -42,15 +40,13 @@
 			</p>
 
 			<p>
-				<input name="login" value="Login" type="submit"/>
+				<input name="login" value="" type="submit"/>
 			</p>
 		</form>
 	</div>
 
 	<div id="footer">
-		Sample application for <a
-			href="http://github.com/SpringSource/spring-security-oauth"
-			target="_blank">Spring Security OAuth</a>
+
 	</div>
 
 

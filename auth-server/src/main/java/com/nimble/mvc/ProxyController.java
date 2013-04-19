@@ -40,6 +40,7 @@ public class ProxyController {
         headersToStrip = new HashSet<String>();
         forwardHeadersToStrip = new HashSet<String>();
         headersToStrip.add("Content-Encoding");
+        headersToStrip.add("Transfer-Encoding");
         //want to strip authorization since changing the method
         forwardHeadersToStrip.add("authorization");
         setHeadersToStrip(headersToStrip);
@@ -49,8 +50,8 @@ public class ProxyController {
         this.headersToStrip = headersToStrip;
     }
 
-    @RequestMapping("/api/v1/**")
-	public ResponseEntity<ObjectNode> proxy(HttpServletRequest request, Model model) throws Exception {
+    @RequestMapping("/api/**")
+	public ResponseEntity<String> proxy(HttpServletRequest request, Model model) throws Exception {
         String orig = request.getQueryString();
 
         String url = targetDomain + request.getServletPath() + "?" + orig;
@@ -65,9 +66,10 @@ public class ProxyController {
         }
 
         HttpEntity<String> reqEntity = new HttpEntity<String>(sb.toString(), extractHeaders(request));
-        ResponseEntity<ObjectNode> responseEntity = null;
+        //ResponseEntity<ObjectNode> responseEntity = null;
+        ResponseEntity<String> responseEntity = null;
         URI uri = new URI(url);
-        responseEntity = restOperations.exchange(uri, HttpMethod.valueOf(request.getMethod()), reqEntity, ObjectNode.class);
+        responseEntity = restOperations.exchange(uri, HttpMethod.valueOf(request.getMethod()), reqEntity, String.class);
         //now need to omit certain headers that no longer apply
         MultiValueMap<String, String> newHeaders = new LinkedMultiValueMap<String, String>();
         for(Map.Entry<String, List<String>> entry : responseEntity.getHeaders().entrySet()) {
@@ -75,8 +77,9 @@ public class ProxyController {
                 newHeaders.put(entry.getKey(), entry.getValue());
             }
         }
-
-        ResponseEntity<ObjectNode> proxyResp = new ResponseEntity<ObjectNode>(responseEntity.getBody(), newHeaders, responseEntity.getStatusCode());
+        newHeaders.put("Content-Length", Arrays.asList("-1"));
+        //ResponseEntity<ObjectNode> proxyResp = new ResponseEntity<ObjectNode>(responseEntity.getBody(), newHeaders, responseEntity.getStatusCode());
+        ResponseEntity<String> proxyResp = new ResponseEntity<String>(responseEntity.getBody(), newHeaders, responseEntity.getStatusCode());
 
 		return proxyResp;
 	}

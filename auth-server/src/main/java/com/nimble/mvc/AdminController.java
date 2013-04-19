@@ -1,4 +1,4 @@
-package org.springframework.security.oauth.examples.sparklr.mvc;
+package com.nimble.mvc;
 
 import java.security.Principal;
 import java.util.ArrayList;

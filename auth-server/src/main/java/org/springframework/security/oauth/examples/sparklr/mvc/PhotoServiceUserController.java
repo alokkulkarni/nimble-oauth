@@ -27,7 +27,7 @@ public class PhotoServiceUserController {
 	public PhotoServiceUser getPhotoServiceUser(Principal principal)
 	{
 		UserDetails userDetails = userDetailsService.loadUserByUsername(principal.getName());
-		return new PhotoServiceUser(userDetails.getUsername(),userDetails.getUsername());
+		return new PhotoServiceUser(principal.getName(), principal.getName());
 	}
 
 	public void setUserDetailsService(UserDetailsService userDetailsService) {

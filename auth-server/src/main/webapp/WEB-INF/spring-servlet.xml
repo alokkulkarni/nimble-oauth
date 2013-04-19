@@ -33,13 +33,13 @@
 
     <!-- The OAuth2 protected resources are separated out into their own block so we can deal with authorization and error handling
 		separately. This isn't mandatory, but it makes it easier to control the behaviour. -->
-    <http pattern="/api/v1/.*" request-matcher="regex" create-session="stateless" entry-point-ref="oauthAuthenticationEntryPoint"
+    <http pattern="/api/.*" request-matcher="regex" create-session="stateless" entry-point-ref="oauthAuthenticationEntryPoint"
           use-expressions="true" xmlns="http://www.springframework.org/schema/security">
         <anonymous enabled="false" />
         <!--<intercept-url pattern="/api/v1/.*"
                        access="#oauth2.clientHasRole('ROLE_CLIENT') and (#oauth2.isClient()) and (#oauth2.hasScope('write') or #oauth2.hasScope('read'))"
                        />-->
-        <intercept-url pattern="/api/v1/.*"
+        <intercept-url pattern="/api/.*"
                        access="#oauth2.clientHasRole('CLIENT') and (#oauth2.hasScope('write') or #oauth2.hasScope('read'))"
                 />
         <intercept-url pattern="/**" access="denyAll()"/>
