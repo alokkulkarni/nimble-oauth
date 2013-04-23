@@ -11,7 +11,7 @@
 
 <body>
 
-	<h1>Sparklr</h1>
+	<h1>Nimble</h1>
 
 	<div id="content">
 		<c:if test="${not empty param.authentication_error}">

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-  <title>Sparklr</title>
+  <title>Nimble</title>
   <link type="text/css" rel="stylesheet" href="<c:url value="/style.css"/>"/>
 
   <authz:authorize ifAllGranted="ROLE_USER">
@@ -20,7 +20,7 @@
 </head>
 <body>
 
-  <h1>Sparklr</h1>
+  <h1>Nimble</h1>
 
   <div id="content">
     <h2>Home</h2>
@@ -31,8 +31,8 @@
     <authz:authorize ifNotGranted="ROLE_USER">
       <h2>Login</h2>
       <form id="loginForm" name="loginForm" action="<c:url value="/login.do"/>" method="post">
-        <p><label>Username: <input type='text' name='j_username' value="marissa"></label></p>
-        <p><label>Password: <input type='text' name='j_password' value="koala"></label></p>
+        <p><label>Username: <input type='text' name='j_username' value=""></label></p>
+        <p><label>Password: <input type='password' name='j_password' value=""></label></p>
         
         <p><input name="login" value="Login" type="submit"></p>
       </form>
