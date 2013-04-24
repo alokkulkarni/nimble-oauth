@@ -55,7 +55,6 @@ public class ProxyController {
         String orig = request.getQueryString();
 
         String url = targetDomain + request.getServletPath() + "?" + orig;
-        logger.debug("URL: "+url);
 
         //extract the request body - assuming only string data being to be supported.
         BufferedReader bufferedReader = request.getReader();
@@ -65,10 +64,19 @@ public class ProxyController {
             sb.append(line);
         }
 
+        if(logger.isDebugEnabled()) {
+            logger.debug("request body: "+sb.toString());
+        }
+
         HttpEntity<String> reqEntity = new HttpEntity<String>(sb.toString(), extractHeaders(request));
         //ResponseEntity<ObjectNode> responseEntity = null;
         ResponseEntity<String> responseEntity = null;
         URI uri = new URI(url);
+        if(logger.isDebugEnabled()) {
+            logger.debug("proxy URL: "+url);
+            logger.debug("request: "+reqEntity.toString());
+        }
+
         responseEntity = restOperations.exchange(uri, HttpMethod.valueOf(request.getMethod()), reqEntity, String.class);
         //now need to omit certain headers that no longer apply
         MultiValueMap<String, String> newHeaders = new LinkedMultiValueMap<String, String>();
