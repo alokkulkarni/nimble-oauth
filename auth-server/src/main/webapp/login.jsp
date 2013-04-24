@@ -35,12 +35,12 @@
 					value="" /></label>
 			</p>
 			<p>
-				<label>Password: <input type='text' name='j_password'
-					value="koala" /></label>
+				<label>Password: <input type='password' name='j_password'
+					value="" /></label>
 			</p>
 
 			<p>
-				<input name="login" value="" type="submit"/>
+				<input name="login" value="Submit" type="submit"/>
 			</p>
 		</form>
 	</div>
