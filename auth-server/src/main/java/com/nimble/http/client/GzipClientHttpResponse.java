@@ -15,15 +15,15 @@ package com.nimble.http.client;
    limitations under the License.
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.util.zip.GZIPInputStream;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.util.zip.GZIPInputStream;
 
 public class GzipClientHttpResponse implements ClientHttpResponse {
 

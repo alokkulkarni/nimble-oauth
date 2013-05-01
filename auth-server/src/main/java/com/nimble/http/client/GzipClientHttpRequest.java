@@ -16,6 +16,12 @@ package com.nimble.http.client;
    limitations under the License.
  */
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.client.AbstractClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.util.FileCopyUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -24,12 +30,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.client.AbstractClientHttpRequest;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.util.FileCopyUtils;
 
 public class GzipClientHttpRequest extends AbstractClientHttpRequest {
     private ByteArrayOutputStream bufferedOutput = new ByteArrayOutputStream();
@@ -52,8 +52,7 @@ public class GzipClientHttpRequest extends AbstractClientHttpRequest {
     public URI getURI() {
         try {
             return this.connection.getURL().toURI();
-        }
-        catch (URISyntaxException ex) {
+        } catch (URISyntaxException ex) {
             throw new IllegalStateException("Could not get HttpURLConnection URI: " + ex.getMessage(), ex);
         }
     }

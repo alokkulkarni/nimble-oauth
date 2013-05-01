@@ -21,6 +21,8 @@
 
 		<http-basic entry-point-ref="clientAuthenticationEntryPoint" />
 		<!-- need this to provide ability to grab client information using the provided clientId and client_secret -->
+		<custom-filter ref="requestContextFilter" position="FIRST" />
+		<custom-filter ref="unexpectedErrorFilter" before="SECURITY_CONTEXT_FILTER" />
 		<custom-filter ref="clientCredentialsTokenEndpointFilter" after="BASIC_AUTH_FILTER" />
 		<access-denied-handler ref="oauthAccessDeniedHandler" />
 	</http>
@@ -40,9 +42,11 @@
                        access="#oauth2.clientHasRole('ROLE_CLIENT') and (#oauth2.isClient()) and (#oauth2.hasScope('write') or #oauth2.hasScope('read'))"
                        />-->
         <intercept-url pattern="/api/.*"
-                       access="#oauth2.clientHasRole('CLIENT') and (#oauth2.hasScope('write') or #oauth2.hasScope('read'))"
+                       access="#oauth2.clientHasRole('ROLE_CLIENT') and (#oauth2.hasScope('write') or #oauth2.hasScope('read'))"
                 />
         <intercept-url pattern="/**" access="denyAll()"/>
+        <custom-filter ref="requestContextFilter" position="FIRST" />
+        <custom-filter ref="unexpectedErrorFilter" before="SECURITY_CONTEXT_FILTER" />
         <custom-filter ref="resourceServerFilter" before="PRE_AUTH_FILTER" />
         <access-denied-handler ref="oauthAccessDeniedHandler" />
         <expression-handler ref="oauthWebExpressionHandler" />
@@ -59,9 +63,13 @@
 		<intercept-url pattern="/oauth/users/.*"
 			access="#oauth2.clientHasRole('ROLE_CLIENT') and (hasRole('ROLE_USER') or #oauth2.isClient()) and #oauth2.hasScope('read')"
 			method="GET" />
-		<intercept-url pattern="/oauth/clients/.*"
-			access="#oauth2.clientHasRole('ROLE_CLIENT') and #oauth2.isClient() and #oauth2.hasScope('read')" method="GET" />
+		<!--<intercept-url pattern="/oauth/clients/.*"
+			access="#oauth2.clientHasRole('ROLE_CLIENT') and #oauth2.isClient() and #oauth2.hasScope('read')" method="GET" />-->
+        <intercept-url pattern="/oauth/clients/.*"
+                       access="#oauth2.clientHasRole('ROLE_CLIENT')" method="GET" />
 		<intercept-url pattern="/**" access="denyAll()"/>
+        <custom-filter ref="requestContextFilter" position="FIRST" />
+        <custom-filter ref="unexpectedErrorFilter" before="SECURITY_CONTEXT_FILTER" />
 		<custom-filter ref="resourceServerFilter" before="PRE_AUTH_FILTER" />
 		<access-denied-handler ref="oauthAccessDeniedHandler" />
 		<expression-handler ref="oauthWebExpressionHandler" />
@@ -90,6 +98,10 @@
 	<bean id="clientCredentialsTokenEndpointFilter" class="org.springframework.security.oauth2.provider.client.ClientCredentialsTokenEndpointFilter">
 		<property name="authenticationManager" ref="clientAuthenticationManager" />
 	</bean>
+
+    <bean id="unexpectedErrorFilter" class="com.nimble.http.error.OutputErrorFormatFilter">
+    </bean>
+    <bean id="requestContextFilter" class="org.springframework.web.filter.RequestContextFilter"/>
 
 	<bean id="accessDecisionManager" class="org.springframework.security.access.vote.UnanimousBased" xmlns="http://www.springframework.org/schema/beans">
 		<constructor-arg>
@@ -169,6 +181,24 @@
             </bean>
         </property>
         <property name="targetDomain" value="https://app.nimble.com"/>
+        <property name="inboundHeadersMods">
+            <list>
+                <ref local="nimbleTokenHeaderModifier"/>
+            </list>
+        </property>
+        <property name="requestBodyExtractor" ref="requestBodyExtractor" />
+        <property name="outboundHeadersMods" ref="outboundHeadersContentModifier" />
+    </bean>
+
+    <bean name="nimbleTokenHeaderModifier" class="com.nimble.http.NimbleTokenHeaderModifier"/>
+    <bean name="requestBodyExtractor" class="com.nimble.http.BufferedReaderRequestBodyExtractor"/>
+    <bean name="outboundHeadersContentModifier" class="com.nimble.http.GenericMapContentModifier">
+        <property name="contentToRemove">
+            <set>
+                <value>Content-Encoding</value>
+                <value>Transfer-Encoding</value>
+            </set>
+        </property>
     </bean>
 
 
@@ -206,12 +236,7 @@
 
 	<!--Basic application beans. -->
 	<bean id="viewResolver" class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
-		<!--<property name="mediaTypes">
-			<map>
-				<entry key="json" value="application/json" />
-			</map>
-		</property>-->
-        <property name="contentNegotiationManager" ref="cnNegManager" />
+		<property name="contentNegotiationManager" ref="cnNegManager" />
 
 
 		<property name="viewResolvers">
