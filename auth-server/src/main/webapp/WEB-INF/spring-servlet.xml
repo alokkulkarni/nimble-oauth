@@ -99,10 +99,9 @@
 		<property name="authenticationManager" ref="clientAuthenticationManager" />
 	</bean>
 
-    <bean id="unexpectedErrorFilter" class="com.nimble.http.error.OutputErrorFormatFilter">
-    </bean>
-    <bean id="requestContextFilter" class="org.springframework.web.filter.RequestContextFilter"/>
-
+    <!--
+       - Access granted only if ALL voters approve.  A voter my abstain in which case if there are any voters that grant and none deny, access is granted
+       -->
 	<bean id="accessDecisionManager" class="org.springframework.security.access.vote.UnanimousBased" xmlns="http://www.springframework.org/schema/beans">
 		<constructor-arg>
 			<list>

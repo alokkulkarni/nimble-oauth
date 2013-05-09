@@ -10,6 +10,7 @@
         <param-value>
             WEB-INF/spring-data.xml
             WEB-INF/spring-views.xml
+            WEB-INF/spring-web.xml
         </param-value>
     </context-param>
 

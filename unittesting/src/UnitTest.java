@@ -1,3 +1,7 @@
+import com.nimble.security.oauth2.spring.provider.IdAwareDefaultAuthorizationRequest;
+import com.nimble.security.oauth2.spring.provider.authentication.Oauth2AuthenticationManager;
+import com.nimble.security.oauth2.spring.provider.authentication.dao.IdAwareJdbcAuthorizationRequestDAO;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -23,6 +27,20 @@ import java.util.*;
 public class UnitTest {
     public static void main(String[] args) {
 
+        FileSystemXmlApplicationContext ctx = new FileSystemXmlApplicationContext("file:/Users/brandonnimble/projects/Nimble/nimble-oauth/unittesting/src/testCtx.xml");
+        /*IdAwareJdbcAuthorizationRequestDAO authReqDao = (IdAwareJdbcAuthorizationRequestDAO) ctx.getBean("authReq");
+        Map<String, String> authParam = new HashMap<String, String>();
+        authParam.put("login", "bvallade");
+        Map<String, String> approvalParam = new HashMap<String, String>();
+        approvalParam.put("auth", "yup");
+        IdAwareDefaultAuthorizationRequest ar = new IdAwareDefaultAuthorizationRequest(authParam, approvalParam, "nimbletest", Arrays.asList("ROLE_USER"));
+        ar.setRedirectUri("http://redirect.to.me.com");
+        ar.setApproved(true);
+        ar.setResourceIds(new HashSet<String>(Arrays.asList("resource1", "resource2")));
+        ar.setScope(new HashSet<String>(Arrays.asList("read", "write")));
+        authReqDao.storeAuthorizationRequest(ar);*/
+        Oauth2AuthenticationManager authManager = (Oauth2AuthenticationManager) ctx.getBean("authenticationManager");
+        authManager.storeOAuth2Authentication();
 
 
         //manualHttp();
