@@ -1,10 +1,12 @@
 import com.nimble.security.oauth2.spring.provider.IdAwareDefaultAuthorizationRequest;
 import com.nimble.security.oauth2.spring.provider.authentication.Oauth2AuthenticationManager;
 import com.nimble.security.oauth2.spring.provider.authentication.dao.IdAwareJdbcAuthorizationRequestDAO;
+import com.nimble.security.oauth2.spring.provider.token.dao.JdbcRefreshTokenDAO;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.security.oauth2.common.DefaultExpiringOAuth2RefreshToken;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -39,9 +41,9 @@ public class UnitTest {
         ar.setResourceIds(new HashSet<String>(Arrays.asList("resource1", "resource2")));
         ar.setScope(new HashSet<String>(Arrays.asList("read", "write")));
         authReqDao.storeAuthorizationRequest(ar);*/
-        Oauth2AuthenticationManager authManager = (Oauth2AuthenticationManager) ctx.getBean("authenticationManager");
-        authManager.storeOAuth2Authentication();
-
+        JdbcRefreshTokenDAO dao = (JdbcRefreshTokenDAO) ctx.getBean("refreshTokenDAO");
+        DefaultExpiringOAuth2RefreshToken t = new DefaultExpiringOAuth2RefreshToken("afadqwdaqdq", new Date());
+        dao.storeRefreshToken(t, 4);
 
         //manualHttp();
         RestTemplate rt = new RestTemplate();

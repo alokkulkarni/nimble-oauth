@@ -1,5 +1,6 @@
 package com.nimble.security.oauth2.spring.provider.authentication.dao;
 
+import com.nimble.security.oauth2.spring.provider.authentication.NimbleOauth2VO;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 /**
@@ -7,7 +8,11 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
  * Time: 3:00 PM
  */
 public interface OAuth2AuthenticationDAO<A extends OAuth2Authentication>  {
-    OAuth2Authentication readAuthentication(String token);
+    NimbleOauth2VO readAuthenticationForAccessToken(String token);
+
+    NimbleOauth2VO readAuthenticationForRefreshToken(String token);
+
+
 
     /**
      * @param authentication

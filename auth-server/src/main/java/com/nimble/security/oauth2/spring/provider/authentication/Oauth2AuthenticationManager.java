@@ -9,5 +9,9 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 public interface Oauth2AuthenticationManager<A extends OAuth2Authentication> {
     public A storeOAuth2Authentication(OAuth2Authentication authentication);
 
+    public A readAuthenticationByAccessToken(String accessToken);
+
+    public A readAuthenticationByRefreshToken(String accessToken);
+
     public int getIdForOAuth2Authentication(OAuth2Authentication authentication);
 }

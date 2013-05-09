@@ -11,6 +11,7 @@
             WEB-INF/spring-data.xml
             WEB-INF/spring-views.xml
             WEB-INF/spring-web.xml
+            WEB-INF/spring-oauth.xml
         </param-value>
     </context-param>
 

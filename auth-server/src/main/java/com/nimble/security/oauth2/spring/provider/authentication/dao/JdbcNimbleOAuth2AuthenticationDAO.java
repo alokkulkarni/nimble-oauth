@@ -1,6 +1,7 @@
 package com.nimble.security.oauth2.spring.provider.authentication.dao;
 
 import com.nimble.security.oauth2.spring.provider.NimbleOAuth2Authentication;
+import com.nimble.security.oauth2.spring.provider.authentication.NimbleOauth2VO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -24,13 +25,14 @@ public class JdbcNimbleOAuth2AuthenticationDAO implements OAuth2AuthenticationDA
     private final JdbcTemplate jdbcTemplate;
     protected Log log = LogFactory.getLog(getClass());
     private SimpleJdbcInsert insert;
-    private RowMapper<? extends OAuth2Authentication> authenticationTokenMapper = null;
-    private String authenticationFieldSelect = "select a.id as auth_id, a.client_authorization_id, a.user_authorization_id, a.authenticated, a.authorities, a.details" +
-            " from oauth2_authorization a";
+    private RowMapper<NimbleOauth2VO> authenticationTokenMapper = null;
+    private String authenticationFieldSelect = "select a.* from oauth2_authorization a";
     private String selectAuthenticationByAccessTokenSql = authenticationFieldSelect + " INNER JOIN oauth2_access_token oat on a.id = oat.authentication_id where oat.access_token = ?";
+    private String selectAuthenticationByRefreshTokenSql = authenticationFieldSelect + " INNER JOIN oauth2_refresh_token oat on a.id = oat.authentication_id where oat.access_token = ?";
+    private String updateSql = "UPDATE oauth2_authorization set client_authorization_id=?, user_authorization_id=?, authenticated=?, details=? where id=?";
 
 
-    public JdbcNimbleOAuth2AuthenticationDAO(DataSource dataSource, RowMapper authenticationTokenMapper) {
+    public JdbcNimbleOAuth2AuthenticationDAO(DataSource dataSource, RowMapper<NimbleOauth2VO> authenticationTokenMapper) {
         Assert.notNull(dataSource, "DataSource required");
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.insert = new SimpleJdbcInsert(jdbcTemplate);
@@ -42,11 +44,28 @@ public class JdbcNimbleOAuth2AuthenticationDAO implements OAuth2AuthenticationDA
         this.authenticationTokenMapper = authenticationTokenMapper;
     }
 
-    public OAuth2Authentication readAuthentication(String token) {
-        OAuth2Authentication auth = null;
+    public NimbleOauth2VO readAuthenticationForAccessToken(String token) {
+        NimbleOauth2VO auth = null;
 
         try {
             auth = jdbcTemplate.queryForObject(selectAuthenticationByAccessTokenSql, authenticationTokenMapper, token);
+        } catch (EmptyResultDataAccessException e) {
+            if (log.isInfoEnabled()) {
+                log.debug("Failed to find access token for access token " + token);
+            }
+        } catch (IllegalArgumentException e) {
+            log.error("Could not extract access token for access token " + token);
+        }
+
+
+        return auth;
+    }
+
+    public NimbleOauth2VO readAuthenticationForRefreshToken(String token) {
+        NimbleOauth2VO auth = null;
+
+        try {
+            auth = jdbcTemplate.queryForObject(selectAuthenticationByRefreshTokenSql, authenticationTokenMapper, token);
         } catch (EmptyResultDataAccessException e) {
             if (log.isInfoEnabled()) {
                 log.debug("Failed to find access token for access token " + token);
@@ -76,9 +95,17 @@ public class JdbcNimbleOAuth2AuthenticationDAO implements OAuth2AuthenticationDA
                 id = n.intValue();
             } else {
                 log.error("storeAuthentication: Expected a return ID from insert but none received!");
+
             }
         } else {
             log.debug("Updating storeAuthentication: " + id);
+            int updateCnt = jdbcTemplate.update(updateSql, new Object[]{authentication.getClientRequestId(), authentication.getUserAuthentication(),
+                    authentication.isAuthenticated(), authentication.getDetails(), authentication.getId()},
+                    new int[]{Types.INTEGER, Types.INTEGER, Types.TINYINT, Types.BLOB, Types.INTEGER});
+            if (updateCnt != 1) {
+                log.error("storeOAuth2Authentication: updated records does not expected 1.  id=" + id + ", updateCnt=" + updateCnt);
+            }
+
         }
         return id;
     }

@@ -45,8 +45,7 @@ public class NimbleTokenStore implements TokenStore {
     }
 
     public OAuth2Authentication readAuthentication(String token) {
-        throw new UnsupportedOperationException("Not yet implemented");
-        //return oauth2AuthenticationManager.readAuthentication(token);
+        return oauth2AuthenticationManager.readAuthenticationByAccessToken(token);
     }
 
     public void storeAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
@@ -57,7 +56,6 @@ public class NimbleTokenStore implements TokenStore {
 
     public OAuth2AccessToken readAccessToken(String tokenValue) {
         OAuth2AccessToken token = accessTokenDAO.readAccessToken(extractTokenKey(tokenValue));
-
         return token;
     }
 
@@ -76,8 +74,7 @@ public class NimbleTokenStore implements TokenStore {
     }
 
     public OAuth2Authentication readAuthenticationForRefreshToken(OAuth2RefreshToken token) {
-        throw new UnsupportedOperationException("Not yet implemented");
-        //return oauth2AuthenticationManager.readAuthentication(token.getValue());
+        return oauth2AuthenticationManager.readAuthenticationByRefreshToken(token.getValue());
     }
 
     public void removeRefreshToken(OAuth2RefreshToken token) {

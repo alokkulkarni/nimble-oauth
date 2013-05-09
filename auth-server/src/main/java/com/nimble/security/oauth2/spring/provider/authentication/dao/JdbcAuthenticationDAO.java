@@ -2,9 +2,11 @@ package com.nimble.security.oauth2.spring.provider.authentication.dao;
 
 import com.nimble.security.core.userdetails.NimbleUser;
 import com.nimble.security.oauth2.spring.provider.authentication.IdAwareOAuth2Authentication;
+import com.nimble.security.oauth2.spring.provider.authentication.dao.sql.DefaultAuthenticationRowMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.security.core.Authentication;
@@ -26,6 +28,8 @@ public class JdbcAuthenticationDAO implements AuthenticationDAO {
     private final JdbcTemplate jdbcTemplate;
     protected Log log = LogFactory.getLog(getClass());
     private SimpleJdbcInsert insert;
+    private RowMapper<? extends Authentication> authenticationRowMapper = new DefaultAuthenticationRowMapper();
+    private String selectSql = "select * from oauth2_authentication where id=?";
 
     public JdbcAuthenticationDAO(DataSource dataSource) {
         Assert.notNull(dataSource, "DataSource required");
@@ -37,8 +41,16 @@ public class JdbcAuthenticationDAO implements AuthenticationDAO {
         insert.compile();
     }
 
+    public void setInsert(SimpleJdbcInsert insert) {
+        this.insert = insert;
+    }
+
+    public void setAuthenticationRowMapper(RowMapper<? extends Authentication> authenticationRowMapper) {
+        this.authenticationRowMapper = authenticationRowMapper;
+    }
+
     public Authentication readAuthentication(int id) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return jdbcTemplate.queryForObject(selectSql, authenticationRowMapper, id);
     }
 
     public int storeAuthentication(Authentication authentication) {
@@ -68,6 +80,7 @@ public class JdbcAuthenticationDAO implements AuthenticationDAO {
 
         } else {
             log.debug("Updating storeAuthentication: " + id);
+            //TODO
         }
         return id;
     }
@@ -78,12 +91,16 @@ public class JdbcAuthenticationDAO implements AuthenticationDAO {
     }
 
     protected int getId(Authentication authentication) {
+        int id = -1;
         try {
             IdAwareOAuth2Authentication req = (IdAwareOAuth2Authentication) authentication;
-            return req.getId();
+            id = req.getId();
         } catch (ClassCastException cce) {
-            throw new UnsupportedOperationException("Cannot look up an ID on an unidentified Authentication: " + authentication.getClass());
-        }
+            //just return -1 -- does not exist
 
+        }
+        return id;
     }
+
+
 }

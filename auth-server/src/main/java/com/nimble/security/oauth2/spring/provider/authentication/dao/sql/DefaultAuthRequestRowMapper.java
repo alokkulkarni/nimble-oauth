@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class DefaultAuthRequestRowMapper implements RowMapper<IdAwareDefaultAuthorizationRequest> {
     public IdAwareDefaultAuthorizationRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
-        java.util.Map<String, String> authorizationParameters = SerializationUtils.deserialize(rs.getBytes("auth_params"));
+        Map<String, String> authorizationParameters = SerializationUtils.deserialize(rs.getBytes("auth_params"));
         Map<String, String> approvalParameters = SerializationUtils.deserialize(rs.getBytes("approve_params"));
         String clientId = rs.getString("client_id");
         Collection<String> scope = StringUtils.commaDelimitedListToSet(rs.getString("scope"));

@@ -1,5 +1,6 @@
 package com.nimble.security.oauth2.spring.provider.authentication.dao;
 
+import com.nimble.security.oauth2.spring.provider.authentication.dao.sql.DefaultAuthRequestRowMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,7 +9,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.util.Assert;
 import org.springframework.util.SerializationUtils;
 import org.springframework.util.StringUtils;
@@ -26,9 +26,9 @@ import java.util.Set;
 public abstract class JdbcAuthorizationRequestDAO implements AuthorizationRequestDAO {
     private final JdbcTemplate jdbcTemplate;
     protected Log log = LogFactory.getLog(getClass());
-
     private SimpleJdbcInsert insert;
-    //private RowMapper<? extends OAuth2Authentication> authenticationTokenMapper = null;
+    private String selectSql = "SELECT * from oauth2_authorization_request where id=?";
+    private RowMapper<? extends AuthorizationRequest> authRequestRowMapper = new DefaultAuthRequestRowMapper();
     //private String authenticationFieldSelect = "select a.id as auth_id, a.client_authorization_id, a.user_authorization_id, a.authenticated, a.authorities, a.details" +
     //        " from oauth2_authorization a";
     /*private String selectAuthenticationByAccessTokenSql = authenticationFieldSelect + " INNER JOIN oauth2_access_token oat on a.id = oat.authentication_id where oat.access_token = ?";
@@ -47,8 +47,8 @@ public abstract class JdbcAuthorizationRequestDAO implements AuthorizationReques
         insert.compile();
     }
 
-    public AuthorizationRequest getAuthorizationRequest(AuthorizationRequest request) {
-        return null;
+    public AuthorizationRequest getAuthorizationRequest(int requestId) {
+        return jdbcTemplate.queryForObject(selectSql, authRequestRowMapper, requestId);
     }
 
     public int storeAuthorizationRequest(AuthorizationRequest authorizationRequest) {
@@ -88,6 +88,7 @@ public abstract class JdbcAuthorizationRequestDAO implements AuthorizationReques
 */
         } else {
             log.debug("Updating authorizationRequest: " + id);
+            //TODO
         }
         return id;
     }

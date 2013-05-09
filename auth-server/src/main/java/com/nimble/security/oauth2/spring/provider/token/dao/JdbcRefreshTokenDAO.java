@@ -20,7 +20,7 @@ import java.sql.Types;
 public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
     private final JdbcTemplate jdbcTemplate;
     protected Log log = LogFactory.getLog(getClass());
-    private String insertSql = "insert into oauth2_refresh_token expiration, authentication_id, times_used, refresh_token values (?,?,?,?)";
+    private String insertSql = "insert into oauth2_refresh_token (expiration, authentication_id, times_used, refresh_token) values (?,?,?,?)";
     private String updateSql = "update oauth2_refresh_token set expiration=?, authentication_id=?, times_used=?, refresh_token=? where id=?";
     private String deleteSql = "delete from oauth2_refresh_token where refresh_token=?";
     private String selectSql = "select * from oauth2_refresh_token where refresh_token=?";
@@ -33,17 +33,18 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
 
     public void storeRefreshToken(OAuth2RefreshToken refreshToken, int authId) {
 
-        NimbleRefreshToken token = new NimbleRefreshToken(refreshToken);
+        NimbleRefreshToken token = createRefreshToken(refreshToken, authId);
+        token.setAuthenticationId(authId);
         if (token.getId() <= 0) {
             //need to have an ID to avoid going to the DB to see if the token exists or doing an insert upon
             //failed update.
             //going to create.  The refresh token value should be unique so may want to do a delete here to make sure it
             //is clean.  This *could* cause a fk problem.  Otherwise we *could* have a unique key problem
-            jdbcTemplate.update(insertSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue()},
-                    new Object[]{Types.TIMESTAMP, Types.INTEGER, Types.INTEGER, Types.VARCHAR});
+             jdbcTemplate.update(insertSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue()},
+                    new int[]{Types.TIMESTAMP, Types.INTEGER, Types.INTEGER, Types.VARCHAR});
         } else {
             jdbcTemplate.update(updateSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue(), token.getId()},
-                    new Object[]{Types.TIMESTAMP, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER});
+                    new int[]{Types.TIMESTAMP, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER});
         }
 
     }
@@ -62,6 +63,16 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
             return ((NimbleRefreshToken) refreshToken).getId();
         } else {
             return -1;
+        }
+    }
+
+    private NimbleRefreshToken createRefreshToken(OAuth2RefreshToken base, int authId) {
+        if(base instanceof NimbleRefreshToken) {
+            return (NimbleRefreshToken)base;
+        } else {
+            NimbleRefreshToken t = new NimbleRefreshToken(base);
+            t.setAuthenticationId(authId);
+            return t;
         }
     }
 

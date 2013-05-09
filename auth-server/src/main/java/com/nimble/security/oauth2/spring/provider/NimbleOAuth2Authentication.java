@@ -3,14 +3,16 @@ package com.nimble.security.oauth2.spring.provider;
 import com.nimble.security.oauth2.spring.provider.authentication.IdAwareOAuth2Authentication;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
+import org.springframework.security.oauth2.provider.DefaultAuthorizationRequest;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+
+import java.util.HashMap;
 
 /**
  * Date: 5/6/13
  * Time: 3:56 PM
  */
 public class NimbleOAuth2Authentication extends IdAwareOAuth2Authentication {
-    private int id;
     private int clientRequestId;
     private int userAuthId;
 
@@ -25,12 +27,21 @@ public class NimbleOAuth2Authentication extends IdAwareOAuth2Authentication {
         super(authorizationRequest, userAuthentication);
     }
 
-    public int getId() {
-        return id;
+    public NimbleOAuth2Authentication(AuthorizationRequest authorizationRequest, Authentication userAuthentication, int clientRequestId, int userAuthId) {
+        super(authorizationRequest, userAuthentication);
+        this.clientRequestId = clientRequestId;
+        this.userAuthId = userAuthId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public NimbleOAuth2Authentication(int id, AuthorizationRequest authorizationRequest, Authentication userAuthentication, int clientRequestId, int userAuthId) {
+        super(id, authorizationRequest, userAuthentication);
+        this.clientRequestId = clientRequestId;
+        this.userAuthId = userAuthId;
+    }
+
+    public NimbleOAuth2Authentication() {
+        //the super class needs one or the other of the constructors
+        super(new DefaultAuthorizationRequest(new HashMap<String, String>()), null);
     }
 
     public int getClientRequestId() {

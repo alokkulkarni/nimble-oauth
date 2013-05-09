@@ -10,6 +10,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.AuthenticationKeyGenerator;
@@ -27,7 +28,7 @@ import java.util.Collection;
  * Date: 5/2/13
  * Time: 3:51 PM
  */
-public class JdbcAccessTokenDAO implements AccessTokenDAO<NimbleAccessToken> {
+public class JdbcAccessTokenDAO implements AccessTokenDAO<OAuth2AccessToken> {
     private final JdbcTemplate jdbcTemplate;
     protected Log log = LogFactory.getLog(getClass());
     private SimpleJdbcInsert insert;
@@ -45,7 +46,7 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<NimbleAccessToken> {
         Assert.notNull(dataSource, "DataSource required");
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.insert = new SimpleJdbcInsert(jdbcTemplate);
-        insert.setTableName("oauth2_authorization");
+        insert.setTableName("oauth2_access_token");
         insert.setColumnNames(Arrays.asList("access_token", "token_type", "scope", "expiration", "refresh_token", "authentication_id", "is_encrypted", "additional_info"));
         insert.setGeneratedKeyName("id");
         insert.compile();
@@ -67,7 +68,7 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<NimbleAccessToken> {
         this.insertAccessTokenSql = insertAccessTokenSql;
     }
 
-    public NimbleAccessToken readAccessToken(String tokenValue) {
+    public OAuth2AccessToken readAccessToken(String tokenValue) {
         NimbleAccessToken accessToken = null;
 
         try {
@@ -84,40 +85,43 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<NimbleAccessToken> {
         return accessToken;
     }
 
-    public void removeAccessToken(NimbleAccessToken token) {
+    public void removeAccessToken(OAuth2AccessToken token) {
         jdbcTemplate.update(deleteAccessTokenSql, token.getValue());
     }
 
-    public NimbleAccessToken getAccessToken(OAuth2Authentication authentication) {
+    public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication) {
         NimbleAccessToken accessToken = null;
 
 
         int id = getId(authentication);
-        try {
-            accessToken = jdbcTemplate.queryForObject(selectAccessTokenAuthenticationSql, accessTokenMapper, id);
-        } catch (EmptyResultDataAccessException e) {
-            if (log.isInfoEnabled()) {
-                log.debug("Failed to find access token for authentication " + authentication);
+        if (id >= 0) {
+            try {
+                accessToken = jdbcTemplate.queryForObject(selectAccessTokenAuthenticationSql, accessTokenMapper, id);
+            } catch (EmptyResultDataAccessException e) {
+                if (log.isInfoEnabled()) {
+                    log.debug("Failed to find access token for authentication " + authentication);
+                }
+            } catch (IllegalArgumentException e) {
+                log.error("Could not extract access token for authentication " + authentication);
             }
-        } catch (IllegalArgumentException e) {
-            log.error("Could not extract access token for authentication " + authentication);
         }
 
 
         return accessToken;
     }
 
-    public Collection<NimbleAccessToken> findTokensByUserName(String userName) {
+    public Collection<OAuth2AccessToken> findTokensByUserName(String userName) {
         //TODO: implement
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    public Collection<NimbleAccessToken> findTokensByClientId(String clientId) {
+    public Collection<OAuth2AccessToken> findTokensByClientId(String clientId) {
         //TODO: implement
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    public void storeAccessToken(NimbleAccessToken token, int authenticationId, OAuth2Authentication authentication) {
+    public void storeAccessToken(OAuth2AccessToken base, int authenticationId, OAuth2Authentication authentication) {
+        NimbleAccessToken token = createAccessToken(base);
         int id = token.getId();
         if (id <= 0) {
             log.debug("Creating storeAccessToken: " + token);
@@ -158,7 +162,15 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<NimbleAccessToken> {
             IdAwareOAuth2Authentication ida = (IdAwareOAuth2Authentication) authentication;
             return ida.getId();
         } catch (ClassCastException cce) {
-            throw new UnsupportedOperationException("Cannot look up an ID on an unidentified Authentication: " + authentication.getClass());
+            return -1;
+        }
+    }
+
+    private NimbleAccessToken createAccessToken(OAuth2AccessToken base) {
+        if(base instanceof NimbleAccessToken) {
+            return (NimbleAccessToken)base;
+        } else {
+            return new NimbleAccessToken(base);
         }
     }
 

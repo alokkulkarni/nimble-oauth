@@ -17,13 +17,15 @@ public class IdAwareJdbcAuthorizationRequestDAO extends JdbcAuthorizationRequest
 
     @Override
     protected int getId(AuthorizationRequest request) {
+        int id = -1;
         try {
             IdAwareDefaultAuthorizationRequest req = (IdAwareDefaultAuthorizationRequest)request;
-            return req.getId();
+            id = req.getId();
         } catch(ClassCastException cce) {
-            throw new UnsupportedOperationException("Cannot look up an ID on an unidentified AuthorizationRequest: "+request.getClass());
-        }
+            //just return -1 -- does not exist
 
+        }
+        return id;
     }
 
 }
