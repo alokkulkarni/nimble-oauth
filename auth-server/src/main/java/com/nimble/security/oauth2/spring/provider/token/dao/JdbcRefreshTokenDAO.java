@@ -31,7 +31,7 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public void storeRefreshToken(OAuth2RefreshToken refreshToken, int authId) {
+    public void storeRefreshToken(OAuth2RefreshToken refreshToken, String authId) {
 
         NimbleRefreshToken token = createRefreshToken(refreshToken, authId);
         token.setAuthenticationId(authId);
@@ -41,10 +41,10 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
             //going to create.  The refresh token value should be unique so may want to do a delete here to make sure it
             //is clean.  This *could* cause a fk problem.  Otherwise we *could* have a unique key problem
              jdbcTemplate.update(insertSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue()},
-                    new int[]{Types.TIMESTAMP, Types.INTEGER, Types.INTEGER, Types.VARCHAR});
+                    new int[]{Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.VARCHAR});
         } else {
             jdbcTemplate.update(updateSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue(), token.getId()},
-                    new int[]{Types.TIMESTAMP, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER});
+                    new int[]{Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.INTEGER});
         }
 
     }
@@ -66,7 +66,7 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
         }
     }
 
-    private NimbleRefreshToken createRefreshToken(OAuth2RefreshToken base, int authId) {
+    private NimbleRefreshToken createRefreshToken(OAuth2RefreshToken base, String authId) {
         if(base instanceof NimbleRefreshToken) {
             return (NimbleRefreshToken)base;
         } else {
@@ -79,7 +79,7 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
     private static class RefreshTokenRowMapper implements RowMapper<NimbleRefreshToken> {
 
         public NimbleRefreshToken mapRow(ResultSet rs, int rowNum) throws SQLException {
-            NimbleRefreshToken token = new NimbleRefreshToken(rs.getString("refresh_token"), rs.getDate("expiration"), rs.getInt("authentication_id"));
+            NimbleRefreshToken token = new NimbleRefreshToken(rs.getString("refresh_token"), rs.getTimestamp("expiration"), rs.getString("authentication_id"));
             token.setId(rs.getInt("id"));
             token.setTimesUsed(rs.getInt("times_used"));
             return token;

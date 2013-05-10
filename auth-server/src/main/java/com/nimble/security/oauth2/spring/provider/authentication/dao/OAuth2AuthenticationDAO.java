@@ -12,12 +12,12 @@ public interface OAuth2AuthenticationDAO<A extends OAuth2Authentication>  {
 
     NimbleOauth2VO readAuthenticationForRefreshToken(String token);
 
-
+    NimbleOauth2VO readAuthenticationById(String authenticationId);
 
     /**
      * @param authentication
      * @return - the id of the authentication object
      */
-    int storeOAuth2Authentication(A authentication);
+    String storeOAuth2Authentication(A authentication);
 
 }

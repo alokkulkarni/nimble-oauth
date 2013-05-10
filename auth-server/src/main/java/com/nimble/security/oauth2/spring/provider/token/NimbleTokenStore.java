@@ -50,7 +50,7 @@ public class NimbleTokenStore implements TokenStore {
 
     public void storeAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
         //make sure the authorization is up to date.  Will want to associate with auth with the token
-        int authId = oauth2AuthenticationManager.getIdForOAuth2Authentication(authentication);
+        String authId = oauth2AuthenticationManager.getIdForOAuth2Authentication(authentication);
         accessTokenDAO.storeAccessToken(token, authId, authentication);
     }
 
@@ -65,7 +65,7 @@ public class NimbleTokenStore implements TokenStore {
 
     public void storeRefreshToken(OAuth2RefreshToken refreshToken, OAuth2Authentication authentication) {
         //make sure the authorization is up to date.  Will want to associate with auth with the token
-        int authId = oauth2AuthenticationManager.getIdForOAuth2Authentication(authentication);
+        String authId = oauth2AuthenticationManager.getIdForOAuth2Authentication(authentication);
         refreshTokenDAO.storeRefreshToken(refreshToken, authId);
     }
 
@@ -86,7 +86,8 @@ public class NimbleTokenStore implements TokenStore {
     }
 
     public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication) {
-        return accessTokenDAO.getAccessToken(authentication);
+        String authId = oauth2AuthenticationManager.getIdForOAuth2Authentication(authentication);
+        return accessTokenDAO.getAccessToken(authentication, authId);
     }
 
     public Collection<OAuth2AccessToken> findTokensByUserName(String userName) {

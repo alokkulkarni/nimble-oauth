@@ -25,8 +25,8 @@ public class NimbleAccessTokenMapper extends AbstractAccessTokenMapper<NimbleAcc
     public NimbleAccessToken mapRow(ResultSet rs, int rowNum) throws SQLException {
         NimbleAccessToken token = super.mapRow(rs, rowNum);
         token.setEncrypted(rs.getBoolean("is_encrypted"));
-        token.setCreated(rs.getDate("created_date"));
-        token.setUpdated(rs.getDate("updated_date"));
+        token.setCreated(rs.getTimestamp("created_date"));
+        token.setUpdated(rs.getTimestamp("updated_date"));
         token.setId(rs.getInt("id"));
         return token;
     }

@@ -3,6 +3,7 @@ package com.nimble.security.oauth2.spring.provider.token.dao.sql;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.DefaultOAuth2RefreshToken;
+import org.springframework.util.SerializationUtils;
 import org.springframework.util.StringUtils;
 
 import java.sql.ResultSet;
@@ -13,8 +14,8 @@ import java.util.Set;
 public abstract class AbstractAccessTokenMapper<N extends DefaultOAuth2AccessToken> implements RowMapper<N> {
     public N mapRow(ResultSet rs, int rowNum) throws SQLException {
         N token = getTokenInstance(rs);
-        token.setAdditionalInformation((Map<String, Object>) rs.getBlob("additional_info"));
-        token.setExpiration(rs.getDate("expiration"));
+        token.setAdditionalInformation((Map<String, Object>) SerializationUtils.deserialize(rs.getBytes("additional_info")));
+        token.setExpiration(rs.getTimestamp("expiration"));
         //token.setRefreshToken();
         String scopes = rs.getString("scope");
         if (StringUtils.hasText(scopes)) {

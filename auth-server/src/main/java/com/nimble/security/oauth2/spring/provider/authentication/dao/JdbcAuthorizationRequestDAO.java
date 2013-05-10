@@ -29,12 +29,7 @@ public abstract class JdbcAuthorizationRequestDAO implements AuthorizationReques
     private SimpleJdbcInsert insert;
     private String selectSql = "SELECT * from oauth2_authorization_request where id=?";
     private RowMapper<? extends AuthorizationRequest> authRequestRowMapper = new DefaultAuthRequestRowMapper();
-    //private String authenticationFieldSelect = "select a.id as auth_id, a.client_authorization_id, a.user_authorization_id, a.authenticated, a.authorities, a.details" +
-    //        " from oauth2_authorization a";
-    /*private String selectAuthenticationByAccessTokenSql = authenticationFieldSelect + " INNER JOIN oauth2_access_token oat on a.id = oat.authentication_id where oat.access_token = ?";
-    private String createAuthorizationRequestSql = "insert into oauth2_authorization_request (client_id, approved, scope, resource_ids, authorities, redirect_uri, auth_params, approve_params) VALUES (?,?,?,?,?,?,?,?)";
-    private String updateAuthorizationRequestSql = "update oauth2_authorization_request SET client_id=?, approved=?, scope=?, resource_ids=?, authorities=?, redirect_uri=?, auth_params=?, approve_params=? where id=?";
-    */
+    
 
 
     public JdbcAuthorizationRequestDAO(DataSource dataSource) {

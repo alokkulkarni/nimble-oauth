@@ -17,12 +17,12 @@ public class NimbleRefreshToken extends DefaultExpiringOAuth2RefreshToken {
     private boolean isEncrypted = false;
     private Date created;
     private Date updated;
-    private int authenticationId = -1;
+    private String authenticationId = null;
 
     /**
      * @param value
      */
-    public NimbleRefreshToken(String value, Date expiration, int authenticationId) {
+    public NimbleRefreshToken(String value, Date expiration, String authenticationId) {
         super(value, expiration);
         setAuthenticationId(authenticationId);
     }
@@ -71,11 +71,11 @@ public class NimbleRefreshToken extends DefaultExpiringOAuth2RefreshToken {
         this.updated = updated;
     }
 
-    public int getAuthenticationId() {
+    public String getAuthenticationId() {
         return authenticationId;
     }
 
-    public void setAuthenticationId(int authenticationId) {
+    public void setAuthenticationId(String authenticationId) {
         this.authenticationId = authenticationId;
     }
 }

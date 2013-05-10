@@ -5,7 +5,7 @@ package com.nimble.security.oauth2.spring.provider.authentication;
  * Time: 1:19 PM
  */
 public class NimbleOauth2VO {
-    private int id;
+    private String id;
     private int clientAuthorizationId;
     private int userAuthorizationId;
     private boolean authenticated;
@@ -14,7 +14,7 @@ public class NimbleOauth2VO {
     public NimbleOauth2VO() {
     }
 
-    public NimbleOauth2VO(int id, int clientAuthorizationId, int userAuthorizationId, boolean authenticated, Object details) {
+    public NimbleOauth2VO(String id, int clientAuthorizationId, int userAuthorizationId, boolean authenticated, Object details) {
         this.id = id;
         this.clientAuthorizationId = clientAuthorizationId;
         this.userAuthorizationId = userAuthorizationId;
@@ -22,11 +22,11 @@ public class NimbleOauth2VO {
         this.details = details;
     }
 
-    int getId() {
+    String getId() {
         return id;
     }
 
-    void setId(int id) {
+    void setId(String id) {
         this.id = id;
     }
 

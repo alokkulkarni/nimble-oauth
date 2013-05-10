@@ -1,6 +1,5 @@
 package com.nimble.security.oauth2.spring.provider;
 
-import com.nimble.security.oauth2.spring.provider.authentication.IdAwareOAuth2Authentication;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
 import org.springframework.security.oauth2.provider.DefaultAuthorizationRequest;
@@ -12,9 +11,10 @@ import java.util.HashMap;
  * Date: 5/6/13
  * Time: 3:56 PM
  */
-public class NimbleOAuth2Authentication extends IdAwareOAuth2Authentication {
-    private int clientRequestId;
-    private int userAuthId;
+public class NimbleOAuth2Authentication extends OAuth2Authentication {
+    private int clientRequestId = -1;
+    private int userAuthId = -1;
+    private String authenticationId = null;
 
     /**
      * Construct an OAuth 2 authentication. Since some grant types don't require user authentication, the user
@@ -33,10 +33,11 @@ public class NimbleOAuth2Authentication extends IdAwareOAuth2Authentication {
         this.userAuthId = userAuthId;
     }
 
-    public NimbleOAuth2Authentication(int id, AuthorizationRequest authorizationRequest, Authentication userAuthentication, int clientRequestId, int userAuthId) {
-        super(id, authorizationRequest, userAuthentication);
+    public NimbleOAuth2Authentication(String id, AuthorizationRequest authorizationRequest, Authentication userAuthentication, int clientRequestId, int userAuthId) {
+        super(authorizationRequest, userAuthentication);
         this.clientRequestId = clientRequestId;
         this.userAuthId = userAuthId;
+        this.authenticationId = id;
     }
 
     public NimbleOAuth2Authentication() {
@@ -58,5 +59,13 @@ public class NimbleOAuth2Authentication extends IdAwareOAuth2Authentication {
 
     public void setUserAuthId(int userAuthId) {
         this.userAuthId = userAuthId;
+    }
+
+    public String getAuthenticationId() {
+        return authenticationId;
+    }
+
+    public void setAuthenticationId(String authenticationId) {
+        this.authenticationId = authenticationId;
     }
 }

@@ -13,5 +13,5 @@ public interface Oauth2AuthenticationManager<A extends OAuth2Authentication> {
 
     public A readAuthenticationByRefreshToken(String accessToken);
 
-    public int getIdForOAuth2Authentication(OAuth2Authentication authentication);
+    public String getIdForOAuth2Authentication(OAuth2Authentication authentication);
 }

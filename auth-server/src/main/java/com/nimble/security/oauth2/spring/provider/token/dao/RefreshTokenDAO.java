@@ -7,7 +7,7 @@ import org.springframework.security.oauth2.common.OAuth2RefreshToken;
  * Time: 12:29 PM
  */
 public interface RefreshTokenDAO {
-    void storeRefreshToken(OAuth2RefreshToken refreshToken, int authId);
+    void storeRefreshToken(OAuth2RefreshToken refreshToken, String authId);
 
     OAuth2RefreshToken readRefreshToken(String tokenValue);
 

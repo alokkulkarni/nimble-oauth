@@ -116,6 +116,37 @@
 
 	<oauth:resource-server id="resourceServerFilter" resource-id="nimble-api" token-services-ref="tokenServices" />
 
+    <bean id="proxyController" class="com.nimble.mvc.ProxyController">
+        <property name="restOperations">
+            <bean class="org.springframework.web.client.RestTemplate">
+                <property name="requestFactory">
+                    <bean class="com.nimble.http.client.GZipClientHttpRequestFactory" />
+                </property>
+                <property name="errorHandler">
+                    <bean class="com.nimble.web.client.IgnoreResponseErrorHandler" />
+                </property>
+            </bean>
+        </property>
+        <property name="targetDomain" value="https://app.nimble.com"/>
+        <property name="inboundHeadersMods">
+            <list>
+                <ref local="nimbleTokenHeaderModifier"/>
+            </list>
+        </property>
+        <property name="requestBodyExtractor" ref="requestBodyExtractor" />
+        <property name="outboundHeadersMods" ref="outboundHeadersContentModifier" />
+    </bean>
+
+    <bean name="nimbleTokenHeaderModifier" class="com.nimble.http.NimbleTokenHeaderModifier"/>
+    <bean name="requestBodyExtractor" class="com.nimble.http.BufferedReaderRequestBodyExtractor"/>
+    <bean name="outboundHeadersContentModifier" class="com.nimble.http.GenericMapContentModifier">
+        <property name="contentToRemove">
+            <set>
+                <value>Content-Encoding</value>
+                <value>Transfer-Encoding</value>
+            </set>
+        </property>
+    </bean>
 	<!--<oauth:client-details-service id="clientDetails">
 		<oauth:client client-id="my-trusted-client" authorized-grant-types="password,authorization_code,refresh_token,implicit"
 			authorities="ROLE_CLIENT, ROLE_TRUSTED_CLIENT" scope="read,write,trust" access-token-validity="60" />

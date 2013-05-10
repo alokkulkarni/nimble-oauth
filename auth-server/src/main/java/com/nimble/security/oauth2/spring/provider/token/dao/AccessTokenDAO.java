@@ -15,13 +15,13 @@ public interface AccessTokenDAO<T extends OAuth2AccessToken> {
 
     void removeAccessToken(T token);
 
-    T getAccessToken(OAuth2Authentication authentication);
+    T getAccessToken(OAuth2Authentication authentication, String authenticationId);
 
     Collection<T> findTokensByUserName(String userName);
 
     Collection<T> findTokensByClientId(String clientId);
 
-    void storeAccessToken(T token, int authenticationId, OAuth2Authentication authentication);
+    void storeAccessToken(T token, String authenticationId, OAuth2Authentication authentication);
 
     void removeAccessTokenUsingRefreshToken(OAuth2RefreshToken refreshToken);
 }
