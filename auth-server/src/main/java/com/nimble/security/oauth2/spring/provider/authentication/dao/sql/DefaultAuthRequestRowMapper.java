@@ -1,6 +1,6 @@
 package com.nimble.security.oauth2.spring.provider.authentication.dao.sql;
 
-import com.nimble.security.oauth2.spring.provider.IdAwareDefaultAuthorizationRequest;
+import com.nimble.security.oauth2.spring.provider.NimbleAuthorizationRequest;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.common.util.SerializationUtils;
@@ -17,14 +17,14 @@ import java.util.Set;
  * Date: 5/6/13
  * Time: 2:30 PM
  */
-public class DefaultAuthRequestRowMapper implements RowMapper<IdAwareDefaultAuthorizationRequest> {
-    public IdAwareDefaultAuthorizationRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
+public class DefaultAuthRequestRowMapper implements RowMapper<NimbleAuthorizationRequest> {
+    public NimbleAuthorizationRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
         Map<String, String> authorizationParameters = SerializationUtils.deserialize(rs.getBytes("auth_params"));
         Map<String, String> approvalParameters = SerializationUtils.deserialize(rs.getBytes("approve_params"));
         String clientId = rs.getString("client_id");
         Collection<String> scope = StringUtils.commaDelimitedListToSet(rs.getString("scope"));
-        IdAwareDefaultAuthorizationRequest authorizationRequest = new IdAwareDefaultAuthorizationRequest(authorizationParameters, approvalParameters, clientId, scope);
-        authorizationRequest.setId(rs.getInt("id"));
+        NimbleAuthorizationRequest authorizationRequest = new NimbleAuthorizationRequest(authorizationParameters, approvalParameters, clientId, scope);
+        authorizationRequest.setAuthorizationId(rs.getString("id"));
         authorizationRequest.setApproved(rs.getBoolean("approved"));
 
         Set<String> authorities = StringUtils.commaDelimitedListToSet(rs.getString("authorities"));

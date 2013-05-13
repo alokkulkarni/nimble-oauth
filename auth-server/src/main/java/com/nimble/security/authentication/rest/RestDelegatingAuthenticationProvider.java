@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -79,10 +80,7 @@ public class RestDelegatingAuthenticationProvider extends AbstractUserDetailsAut
 
     }
 
-    @Override
-    protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
+
 
     /*public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         //prepare the request body for execution.
@@ -150,8 +148,14 @@ public class RestDelegatingAuthenticationProvider extends AbstractUserDetailsAut
         return userDetails;
     }
 
+    @Override
+    protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+
     public boolean supports(Class<?> aClass) {
-        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(aClass);
+        return Authentication.class.isAssignableFrom(aClass);
     }
 
     /**

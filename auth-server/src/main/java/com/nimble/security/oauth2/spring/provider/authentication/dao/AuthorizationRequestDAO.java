@@ -7,7 +7,7 @@ import org.springframework.security.oauth2.provider.AuthorizationRequest;
  * Time: 4:02 PM
  */
 public interface AuthorizationRequestDAO<A extends AuthorizationRequest> {
-    AuthorizationRequest getAuthorizationRequest(int requestId);
+    AuthorizationRequest getAuthorizationRequest(String requestId);
 
-    int storeAuthorizationRequest(AuthorizationRequest authorizationRequest);
+    String storeAuthorizationRequest(AuthorizationRequest authorizationRequest);
 }

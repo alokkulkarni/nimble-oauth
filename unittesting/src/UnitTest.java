@@ -1,13 +1,9 @@
-import com.nimble.security.oauth2.spring.provider.IdAwareDefaultAuthorizationRequest;
-import com.nimble.security.oauth2.spring.provider.authentication.Oauth2AuthenticationManager;
-import com.nimble.security.oauth2.spring.provider.authentication.dao.IdAwareJdbcAuthorizationRequestDAO;
 import com.nimble.security.oauth2.spring.provider.token.dao.JdbcRefreshTokenDAO;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.security.oauth2.common.DefaultExpiringOAuth2RefreshToken;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -30,12 +26,12 @@ public class UnitTest {
     public static void main(String[] args) {
 
         FileSystemXmlApplicationContext ctx = new FileSystemXmlApplicationContext("file:/Users/brandonnimble/projects/Nimble/nimble-oauth/unittesting/src/testCtx.xml");
-        /*IdAwareJdbcAuthorizationRequestDAO authReqDao = (IdAwareJdbcAuthorizationRequestDAO) ctx.getBean("authReq");
+        /*NimbleJdbcAuthorizationRequestDAO authReqDao = (NimbleJdbcAuthorizationRequestDAO) ctx.getBean("authReq");
         Map<String, String> authParam = new HashMap<String, String>();
         authParam.put("login", "bvallade");
         Map<String, String> approvalParam = new HashMap<String, String>();
         approvalParam.put("auth", "yup");
-        IdAwareDefaultAuthorizationRequest ar = new IdAwareDefaultAuthorizationRequest(authParam, approvalParam, "nimbletest", Arrays.asList("ROLE_USER"));
+        NimbleAuthorizationRequest ar = new NimbleAuthorizationRequest(authParam, approvalParam, "nimbletest", Arrays.asList("ROLE_USER"));
         ar.setRedirectUri("http://redirect.to.me.com");
         ar.setApproved(true);
         ar.setResourceIds(new HashSet<String>(Arrays.asList("resource1", "resource2")));

@@ -6,18 +6,18 @@ package com.nimble.security.oauth2.spring.provider.authentication;
  */
 public class NimbleOauth2VO {
     private String id;
-    private int clientAuthorizationId;
-    private int userAuthorizationId;
+    /*private String clientAuthorizationId;
+    private int userAuthorizationId;*/
     private boolean authenticated;
     private Object details;
 
     public NimbleOauth2VO() {
     }
 
-    public NimbleOauth2VO(String id, int clientAuthorizationId, int userAuthorizationId, boolean authenticated, Object details) {
+    public NimbleOauth2VO(String id, /*String clientAuthorizationId, int userAuthorizationId,*/ boolean authenticated, Object details) {
         this.id = id;
-        this.clientAuthorizationId = clientAuthorizationId;
-        this.userAuthorizationId = userAuthorizationId;
+        /*this.clientAuthorizationId = clientAuthorizationId;
+        this.userAuthorizationId = userAuthorizationId;*/
         this.authenticated = authenticated;
         this.details = details;
     }
@@ -30,11 +30,11 @@ public class NimbleOauth2VO {
         this.id = id;
     }
 
-    int getClientAuthorizationId() {
+    /*String getClientAuthorizationId() {
         return clientAuthorizationId;
     }
 
-    void setClientAuthorizationId(int clientAuthorizationId) {
+    void setClientAuthorizationId(String clientAuthorizationId) {
         this.clientAuthorizationId = clientAuthorizationId;
     }
 
@@ -44,7 +44,7 @@ public class NimbleOauth2VO {
 
     void setUserAuthorizationId(int userAuthorizationId) {
         this.userAuthorizationId = userAuthorizationId;
-    }
+    }*/
 
     boolean isAuthenticated() {
         return authenticated;

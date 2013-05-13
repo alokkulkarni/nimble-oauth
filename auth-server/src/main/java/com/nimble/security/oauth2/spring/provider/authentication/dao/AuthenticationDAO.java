@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication;
  * Time: 3:00 PM
  */
 public interface AuthenticationDAO {
-    Authentication readAuthentication(int id);
+    Authentication readAuthentication(String id);
 
     /**
      * @param authentication

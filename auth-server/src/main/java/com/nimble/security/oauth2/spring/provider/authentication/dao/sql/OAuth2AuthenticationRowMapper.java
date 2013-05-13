@@ -14,8 +14,8 @@ import java.sql.SQLException;
 public class OAuth2AuthenticationRowMapper implements RowMapper<NimbleOauth2VO> {
     public NimbleOauth2VO mapRow(ResultSet rs, int rowNum) throws SQLException {
 
-        NimbleOauth2VO oAuth2Authentication = new NimbleOauth2VO(rs.getString("id"), rs.getInt("client_authorization_id"),
-                rs.getInt("user_authorization_id"), rs.getBoolean("authenticated"), SerializationUtils.deserialize(rs.getBytes("details")));
+        NimbleOauth2VO oAuth2Authentication = new NimbleOauth2VO(rs.getString("id"), /*rs.getString("client_authorization_id"),
+                rs.getInt("user_authorization_id"),*/ rs.getBoolean("authenticated"), SerializationUtils.deserialize(rs.getBytes("details")));
 
         return oAuth2Authentication;
     }

@@ -58,7 +58,7 @@
         <constructor-arg name="dataSource" ref="oAuthDataSource" />
     </bean>
 
-    <bean id="authReq" class="com.nimble.security.oauth2.spring.provider.authentication.dao.IdAwareJdbcAuthorizationRequestDAO">
+    <bean id="authReq" class="com.nimble.security.oauth2.spring.provider.authentication.dao.NimbleJdbcAuthorizationRequestDAO">
         <constructor-arg name="dataSource" ref="oAuthDataSource"/>
     </bean>
 

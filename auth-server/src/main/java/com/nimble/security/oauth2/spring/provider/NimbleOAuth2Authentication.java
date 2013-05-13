@@ -12,8 +12,8 @@ import java.util.HashMap;
  * Time: 3:56 PM
  */
 public class NimbleOAuth2Authentication extends OAuth2Authentication {
-    private int clientRequestId = -1;
-    private int userAuthId = -1;
+    //private String clientRequestId = null;
+    //private int userAuthId = -1;
     private String authenticationId = null;
 
     /**
@@ -27,16 +27,16 @@ public class NimbleOAuth2Authentication extends OAuth2Authentication {
         super(authorizationRequest, userAuthentication);
     }
 
-    public NimbleOAuth2Authentication(AuthorizationRequest authorizationRequest, Authentication userAuthentication, int clientRequestId, int userAuthId) {
+    /*public NimbleOAuth2Authentication(AuthorizationRequest authorizationRequest, Authentication userAuthentication, String clientRequestId, int userAuthId) {
         super(authorizationRequest, userAuthentication);
-        this.clientRequestId = clientRequestId;
-        this.userAuthId = userAuthId;
-    }
+        //this.clientRequestId = clientRequestId;
+        //this.userAuthId = userAuthId;
+    }*/
 
-    public NimbleOAuth2Authentication(String id, AuthorizationRequest authorizationRequest, Authentication userAuthentication, int clientRequestId, int userAuthId) {
+    public NimbleOAuth2Authentication(String id, AuthorizationRequest authorizationRequest, Authentication userAuthentication/*, String clientRequestId, int userAuthId*/) {
         super(authorizationRequest, userAuthentication);
-        this.clientRequestId = clientRequestId;
-        this.userAuthId = userAuthId;
+        //this.clientRequestId = clientRequestId;
+        //this.userAuthId = userAuthId;
         this.authenticationId = id;
     }
 
@@ -45,11 +45,11 @@ public class NimbleOAuth2Authentication extends OAuth2Authentication {
         super(new DefaultAuthorizationRequest(new HashMap<String, String>()), null);
     }
 
-    public int getClientRequestId() {
+    /*public String getClientRequestId() {
         return clientRequestId;
     }
 
-    public void setClientRequestId(int clientRequestId) {
+    public void setClientRequestId(String clientRequestId) {
         this.clientRequestId = clientRequestId;
     }
 
@@ -59,7 +59,7 @@ public class NimbleOAuth2Authentication extends OAuth2Authentication {
 
     public void setUserAuthId(int userAuthId) {
         this.userAuthId = userAuthId;
-    }
+    }*/
 
     public String getAuthenticationId() {
         return authenticationId;

@@ -29,8 +29,8 @@ public class JdbcNimbleOAuth2AuthenticationDAO implements OAuth2AuthenticationDA
     private String selectAuthenticationByAccessTokenSql = authenticationFieldSelect + " INNER JOIN oauth2_access_token oat on a.id = oat.authentication_id where oat.access_token = ?";
     private String selectAuthenticationByRefreshTokenSql = authenticationFieldSelect + " INNER JOIN oauth2_refresh_token oat on a.id = oat.authentication_id where oat.refresh_token = ?";
     private String selectAuthenticationByIdSql = authenticationFieldSelect + " where a.id = ?";
-    private String updateSql = "UPDATE oauth2_authorization set client_authorization_id=?, user_authorization_id=?, authenticated=?, details=? where id=?";
-    private String insertSql = "insert into oauth2_authorization (id, client_authorization_id, user_authorization_id, authenticated, details) VALUES (?,?,?,?,?)";
+    private String updateSql = "UPDATE oauth2_authorization set authenticated=?, details=? where id=?";
+    private String insertSql = "insert into oauth2_authorization (id, authenticated, details) VALUES (?,?,?)";
 
 
     public JdbcNimbleOAuth2AuthenticationDAO(DataSource dataSource, RowMapper<NimbleOauth2VO> authenticationTokenMapper) {
@@ -101,18 +101,18 @@ public class JdbcNimbleOAuth2AuthenticationDAO implements OAuth2AuthenticationDA
         Assert.hasLength(authentication.getAuthenticationId(), "Incoming object must always have an ID");
         try {
             log.debug("Creating storeAuthentication: " + authentication);
-            int updateCnt = jdbcTemplate.update(insertSql, new Object[]{authentication.getAuthenticationId(), authentication.getClientRequestId(), authentication.getUserAuthId(),
+            int updateCnt = jdbcTemplate.update(insertSql, new Object[]{authentication.getAuthenticationId(),/* authentication.getClientRequestId(), authentication.getUserAuthId(),*/
                     authentication.isAuthenticated(), SerializationUtils.serialize(authentication.getDetails())},
-                    new int[]{Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.TINYINT, Types.BLOB});
+                    new int[]{Types.VARCHAR, /*Types.VARCHAR, Types.INTEGER, */Types.TINYINT, Types.BLOB});
             if (updateCnt != 1) {
                 log.error("storeOAuth2Authentication: updated records does not = expected 1.  id=" + authentication.getAuthenticationId() + ", updateCnt=" + updateCnt);
             }
         } catch (DuplicateKeyException e) {
             //already exists, do update
             log.debug("object already exists. updating storeAuthentication: " + authentication);
-            int updateCnt = jdbcTemplate.update(updateSql, new Object[]{authentication.getClientRequestId(), authentication.getUserAuthId(),
+            int updateCnt = jdbcTemplate.update(updateSql, new Object[]{/*authentication.getClientRequestId(), authentication.getUserAuthId(),*/
                     authentication.isAuthenticated(), SerializationUtils.serialize(authentication.getDetails()), authentication.getAuthenticationId()},
-                    new int[]{Types.INTEGER, Types.INTEGER, Types.TINYINT, Types.BLOB, Types.VARCHAR});
+                    new int[]{/*Types.VARCHAR, Types.INTEGER, */Types.TINYINT, Types.BLOB, Types.VARCHAR});
             if (updateCnt != 1) {
                 log.error("storeOAuth2Authentication: updated records does not = expected 1.  id=" + authentication.getAuthenticationId() + ", updateCnt=" + updateCnt);
             }

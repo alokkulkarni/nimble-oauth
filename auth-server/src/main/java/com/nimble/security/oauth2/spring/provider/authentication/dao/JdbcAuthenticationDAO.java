@@ -1,14 +1,12 @@
 package com.nimble.security.oauth2.spring.provider.authentication.dao;
 
-import com.nimble.security.core.userdetails.NimbleUser;
-import com.nimble.security.oauth2.spring.provider.authentication.IdAwareOAuth2Authentication;
+import com.nimble.security.oauth2.spring.provider.authentication.NimbleAuthentication;
 import com.nimble.security.oauth2.spring.provider.authentication.dao.sql.DefaultAuthenticationRowMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
@@ -16,7 +14,6 @@ import org.springframework.util.SerializationUtils;
 
 import javax.sql.DataSource;
 import java.sql.Types;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,79 +24,102 @@ import java.util.Set;
 public class JdbcAuthenticationDAO implements AuthenticationDAO {
     private final JdbcTemplate jdbcTemplate;
     protected Log log = LogFactory.getLog(getClass());
-    private SimpleJdbcInsert insert;
+    //private SimpleJdbcInsert insert;
     private RowMapper<? extends Authentication> authenticationRowMapper = new DefaultAuthenticationRowMapper();
-    private String selectSql = "select * from oauth2_authentication where id=?";
+    private String selectSql = "select * from oauth2_authentication where oauth2AuthenticationId=?";
+
+    private String insertSql = "INSERT INTO oauth2_authentication (oauth2AuthenticationId, username, authenticated, principal, nimble_token, " +
+            "authorities) VALUES (?,?,?,?,?,?)";
+    private String updateSql = "UPDATE oauth2_authentication set username=?, authenticated=?, principal=?, nimble_token=?, " +
+            "authorities=? WHERE oauth2AuthenticationId=?";
 
     public JdbcAuthenticationDAO(DataSource dataSource) {
         Assert.notNull(dataSource, "DataSource required");
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.insert = new SimpleJdbcInsert(jdbcTemplate);
+        /*this.insert = new SimpleJdbcInsert(jdbcTemplate);
         insert.setTableName("oauth2_authentication");
         insert.setColumnNames(Arrays.asList("username", "authenticated", "principal", "nimble_token"));
         insert.setGeneratedKeyName("id");
-        insert.compile();
+        insert.compile();*/
     }
 
-    public void setInsert(SimpleJdbcInsert insert) {
+    /*public void setInsert(SimpleJdbcInsert insert) {
         this.insert = insert;
-    }
+    }*/
 
     public void setAuthenticationRowMapper(RowMapper<? extends Authentication> authenticationRowMapper) {
         this.authenticationRowMapper = authenticationRowMapper;
     }
 
-    public Authentication readAuthentication(int id) {
+    public Authentication readAuthentication(String id) {
         return jdbcTemplate.queryForObject(selectSql, authenticationRowMapper, id);
     }
 
     public int storeAuthentication(Authentication authentication) {
-        int id = getId(authentication);
-        if (id <= 0) {
-            log.debug("Creating storeAuthentication: " + authentication);
+        String id = null;
+        int update = -1;
+        if (authentication != null) {
+            id = getId(authentication);
 
+            if (id != null) {
+                log.debug("Creating authentication: " + authentication);
 
-            Set<String> authorities = new HashSet<String>();
-            for (GrantedAuthority ga : authentication.getAuthorities()) {
-                authorities.add(ga.getAuthority());
-            }
-            MapSqlParameterSource params = new MapSqlParameterSource();
-            params.addValue("username", authentication.getName(), Types.VARCHAR);
-            params.addValue("authenticated", authentication.isAuthenticated(), Types.TINYINT);
-            params.addValue("principal", SerializationUtils.serialize(authentication.getPrincipal()), Types.BLOB);
-            params.addValue("nimble_token", getNimbleToken(authentication), Types.VARCHAR);
-
-
-            java.lang.Number n = insert.executeAndReturnKey(params);
-            if (n != null) {
-                id = n.intValue();
+                try {
+                    update = jdbcTemplate.update(insertSql, getInsertValues(id, authentication), getInsertFieldTypes());
+                    if (update != 1) {
+                        log.warn("storeAuthentication: Unexpected create count: " + update + ", authentication: " + authentication);
+                    }
+                } catch (DuplicateKeyException dke) {
+                    //already exists, do an update
+                    log.debug("Updating authorizationRequest: " + id);
+                    update = jdbcTemplate.update(updateSql, getUpdateValues(id, authentication), getUpdateFieldTypes());
+                    if (update != 1) {
+                        log.warn("storeAuthentication: Unexpected updated count: " + update + ", authentication: " + authentication);
+                    }
+                }
             } else {
-                log.error("storeAuthentication: Expected a return ID from insert but none received!");
+                log.error("No id found for Authentication.  ID must always be provided for saving. " + authentication);
             }
-
-
-        } else {
-            log.debug("Updating storeAuthentication: " + id);
-            //TODO
         }
-        return id;
+        return update;
     }
 
-    protected String getNimbleToken(Authentication authentication) {
-        NimbleUser user = (NimbleUser) authentication.getPrincipal();
-        return user.getNimbleToken();
+    //TODO: everything Nimble specific should be in a subclass
+    protected String getId(Authentication authentication) {
+        return ((NimbleAuthentication)authentication).getOauth2AuthorizationId();
     }
 
-    protected int getId(Authentication authentication) {
-        int id = -1;
-        try {
-            IdAwareOAuth2Authentication req = (IdAwareOAuth2Authentication) authentication;
-            id = req.getId();
-        } catch (ClassCastException cce) {
-            //just return -1 -- does not exist
 
+    protected Object[] getUpdateValues(String id, Authentication authentication) {
+        Set<String> authorities = getAuthorities(authentication);
+        NimbleAuthentication auth = (NimbleAuthentication)authentication;
+        return new Object[]{auth.getName(), auth.isAuthenticated(), SerializationUtils.serialize(auth.getPrincipal()),
+                auth.getNimbleToken(), authorities, id
+        };
+    }
+
+    protected int[] getUpdateFieldTypes() {
+        return new int[]{Types.VARCHAR, Types.TINYINT, Types.BLOB, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR};
+    }
+
+    protected Object[] getInsertValues(String id, Authentication authentication) {
+        Set<String> authorities = getAuthorities(authentication);
+        NimbleAuthentication auth = (NimbleAuthentication)authentication;
+        return new Object[]{id, auth.getName(), auth.isAuthenticated(), SerializationUtils.serialize(auth.getPrincipal()),
+                auth.getNimbleToken(), authorities
+        };
+    }
+
+    protected int[] getInsertFieldTypes() {
+        return new int[]{Types.VARCHAR, Types.VARCHAR, Types.TINYINT, Types.BLOB, Types.VARCHAR, Types.VARCHAR};
+    }
+
+    private Set<String> getAuthorities(Authentication authentication) {
+        Set<String> authorities = new HashSet<String>();
+        for (GrantedAuthority ga : authentication.getAuthorities()) {
+            authorities.add(ga.getAuthority());
         }
-        return id;
+        return authorities;
     }
 
 

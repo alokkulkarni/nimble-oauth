@@ -1,10 +1,14 @@
 package com.nimble.security.oauth2.spring.provider.authentication;
 
+import com.nimble.security.core.userdetails.NimbleUser;
+import com.nimble.security.oauth2.spring.provider.NimbleAuthorizationRequest;
 import com.nimble.security.oauth2.spring.provider.NimbleOAuth2Authentication;
 import com.nimble.security.oauth2.spring.provider.authentication.dao.AuthenticationDAO;
 import com.nimble.security.oauth2.spring.provider.authentication.dao.AuthorizationRequestDAO;
 import com.nimble.security.oauth2.spring.provider.authentication.dao.OAuth2AuthenticationDAO;
+import com.nimble.security.oauth2.spring.provider.token.AuthorizationRequestKeyGenerator;
 import com.nimble.security.oauth2.spring.provider.token.NimbleAuthenticationKeyGenerator;
+import com.nimble.security.oauth2.spring.provider.token.NimbleAuthorizationRequestKeyGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.Authentication;
@@ -22,6 +26,7 @@ public class NimbleOauth2AuthenticationManager implements Oauth2AuthenticationMa
     private AuthenticationDAO authenticationDAO;
     private OAuth2AuthenticationDAO oAuth2AuthenticationDAO;
     private AuthenticationKeyGenerator authenticationKeyGenerator = new NimbleAuthenticationKeyGenerator();
+    private AuthorizationRequestKeyGenerator<NimbleAuthorizationRequest> authorizationRequestKeyGenerator = new NimbleAuthorizationRequestKeyGenerator();
 
     public void setoAuth2AuthenticationDAO(OAuth2AuthenticationDAO oAuth2AuthenticationDAO) {
         this.oAuth2AuthenticationDAO = oAuth2AuthenticationDAO;
@@ -39,24 +44,34 @@ public class NimbleOauth2AuthenticationManager implements Oauth2AuthenticationMa
         this.authenticationKeyGenerator = authenticationKeyGenerator;
     }
 
+    public void setAuthorizationRequestKeyGenerator(AuthorizationRequestKeyGenerator<NimbleAuthorizationRequest> authorizationRequestKeyGenerator) {
+        this.authorizationRequestKeyGenerator = authorizationRequestKeyGenerator;
+    }
+
     public NimbleOAuth2Authentication storeOAuth2Authentication(OAuth2Authentication authentication) {
         //will deconstruct the pieces of the oauth authentication for storage
-        AuthorizationRequest clientRequest = authentication.getAuthorizationRequest();
-        //save the client request (create or update, depending on if have an existing id)
-        //returning the id of the authorization - could just return an existing id in the case of update
-        int clientRequestId = authorizationRequestDAO.storeAuthorizationRequest(clientRequest);
+        AuthorizationRequest request = authentication.getAuthorizationRequest();
+        //massage into a nimble AuthorizationRequest for saving
+        NimbleAuthorizationRequest clientRequest = new NimbleAuthorizationRequest(request);
+        clientRequest.setUserName(authentication.getName());
+        //String clientRequestId = authorizationRequestKeyGenerator.extractKey(clientRequest);
 
         //get the user authentication piece out to store. Same comments regarding id apply here
-        Authentication userAuthentication = authentication.getUserAuthentication();
-        int userAuthId = authenticationDAO.storeAuthentication(userAuthentication);
+        String nimbleToken = getNimbleToken(authentication.getUserAuthentication());
+        NimbleAuthentication userAuthentication = new NimbleAuthentication(authentication.getUserAuthentication(), nimbleToken);
 
+        //create the parent (shell)
         NimbleOAuth2Authentication auth2Authentication = new NimbleOAuth2Authentication(clientRequest, userAuthentication);
-        auth2Authentication.setUserAuthId(userAuthId);
-        auth2Authentication.setClientRequestId(clientRequestId);
         auth2Authentication.setAuthenticationId(authenticationKeyGenerator.extractKey(auth2Authentication));
         //now store the aggregated oauth authentication which is a composition of client auth and user auth
         String auth2Id = oAuth2AuthenticationDAO.storeOAuth2Authentication(auth2Authentication);
         auth2Authentication.setAuthenticationId(auth2Id);
+        //set the parent record Id to keep the objects associated
+        clientRequest.setAuthorizationId(auth2Id);
+        userAuthentication.setOauth2AuthorizationId(auth2Id);
+
+        authorizationRequestDAO.storeAuthorizationRequest(clientRequest);
+        authenticationDAO.storeAuthentication(userAuthentication);
 
         return auth2Authentication;
     }
@@ -94,24 +109,29 @@ public class NimbleOauth2AuthenticationManager implements Oauth2AuthenticationMa
     private NimbleOAuth2Authentication buildNimbleOAuth2Authentication(NimbleOauth2VO base) {
         NimbleOAuth2Authentication auth = null;
         if (base != null) {
-            Authentication userAuth = authenticationDAO.readAuthentication(base.getUserAuthorizationId());
-            AuthorizationRequest clientAuth = authorizationRequestDAO.getAuthorizationRequest(base.getClientAuthorizationId());
-            auth = new NimbleOAuth2Authentication(base.getId(), clientAuth, userAuth, base.getClientAuthorizationId(), base.getUserAuthorizationId());
+            Authentication userAuth = authenticationDAO.readAuthentication(base.getId());
+            AuthorizationRequest clientAuth = authorizationRequestDAO.getAuthorizationRequest(base.getId());
+            auth = new NimbleOAuth2Authentication(base.getId(), clientAuth, userAuth/*, base.getClientAuthorizationId(), base.getUserAuthorizationId()*/);
         }
         return auth;
     }
 
-    public String getIdForOAuth2Authentication(OAuth2Authentication authentication) {
+    public String getIdForOAuth2Authentication(OAuth2Authentication authentication, boolean ensureRecordExists) {
         if (authentication instanceof NimbleOAuth2Authentication) {
             return ((NimbleOAuth2Authentication) authentication).getAuthenticationId();
         } else {
             String id = authenticationKeyGenerator.extractKey(authentication);
             NimbleOAuth2Authentication o = readAuthenticationById(id);
-            if(o == null) {
+            if (o == null && ensureRecordExists) {
                 o = storeOAuth2Authentication(authentication);
             }
-            return o.getAuthenticationId();
+            return o != null ? o.getAuthenticationId() : null;
         }
+    }
+
+    protected String getNimbleToken(Authentication authentication) {
+        NimbleUser user = (NimbleUser) authentication.getPrincipal();
+        return user.getNimbleToken();
     }
 
 
