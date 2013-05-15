@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
     <context-param>
         <param-name>
@@ -51,6 +51,21 @@
         <res-ref-name>jdbc/oAuthDB</res-ref-name>
         <res-type>javax.sql.DataSource</res-type>
         <res-auth>Container</res-auth>
+        <lookup-name>java:/jdbc/oAuthDB</lookup-name>
+    </resource-ref>
+
+    <!--<resource-ref>
+        <res-ref-name>transaction/TransactionManager</res-ref-name>
+        <res-type>javax.transaction.TransactionManager</res-type>
+        <res-auth>Container</res-auth>
+        <lookup-name>java:TransactionManager</lookup-name>
+    </resource-ref>
+-->
+    <resource-ref>
+        <res-ref-name>transaction/UserTransaction</res-ref-name>
+        <res-type>javax.transaction.UserTransaction</res-type>
+        <res-auth>Container</res-auth>
+        <lookup-name>java:jboss/UserTransaction</lookup-name>
     </resource-ref>
 
 </web-app>

@@ -1,64 +1,67 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:oauth="http://www.springframework.org/schema/security/oauth2" xmlns:sec="http://www.springframework.org/schema/security"
-	xmlns:mvc="http://www.springframework.org/schema/mvc"
-	xsi:schemaLocation="http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd
-		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
-		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
+       xmlns:oauth="http://www.springframework.org/schema/security/oauth2" xmlns:sec="http://www.springframework.org/schema/security"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
 
     <!--
        - Access granted only if ALL voters approve.  A voter my abstain in which case if there are any voters that grant and none deny, access is granted
        -->
-	<bean id="accessDecisionManager" class="org.springframework.security.access.vote.UnanimousBased" xmlns="http://www.springframework.org/schema/beans">
-		<constructor-arg>
-			<list>
-				<bean class="org.springframework.security.oauth2.provider.vote.ScopeVoter" />
-				<bean class="org.springframework.security.access.vote.RoleVoter" />
-				<bean class="org.springframework.security.access.vote.AuthenticatedVoter" />
-			</list>
-		</constructor-arg>
-	</bean>
+    <bean id="accessDecisionManager" class="org.springframework.security.access.vote.UnanimousBased"
+          xmlns="http://www.springframework.org/schema/beans">
+        <constructor-arg>
+            <list>
+                <bean class="org.springframework.security.oauth2.provider.vote.ScopeVoter"/>
+                <bean class="org.springframework.security.access.vote.RoleVoter"/>
+                <bean class="org.springframework.security.access.vote.AuthenticatedVoter"/>
+            </list>
+        </constructor-arg>
+    </bean>
 
-	<authentication-manager id="clientAuthenticationManager" xmlns="http://www.springframework.org/schema/security">
-		<authentication-provider user-service-ref="clientDetailsUserService" />
-	</authentication-manager>
+    <authentication-manager id="clientAuthenticationManager" xmlns="http://www.springframework.org/schema/security">
+        <authentication-provider user-service-ref="clientDetailsUserService"/>
+    </authentication-manager>
 
-	<authentication-manager alias="authenticationManager" xmlns="http://www.springframework.org/schema/security">
-		<authentication-provider ref="authenticationProvider" />
-	</authentication-manager>
+    <authentication-manager alias="authenticationManager" xmlns="http://www.springframework.org/schema/security">
+        <authentication-provider ref="authenticationProvider"/>
+    </authentication-manager>
 
-    <bean id="authenticationProvider" class="com.nimble.security.authentication.rest.RestDelegatingAuthenticationProvider" >
+    <bean id="authenticationProvider"
+          class="com.nimble.security.authentication.rest.RestDelegatingAuthenticationProvider">
         <property name="createSessionEndpointUrl" value="https://app.nimble.com/api/sessions"/>
-        <property name="userDetailsManager" ref="jdbcUserDetailsManager" />
+        <property name="userDetailsManager" ref="jdbcUserDetailsManager"/>
     </bean>
 
     <bean id="jdbcUserDetailsManager" class="org.springframework.security.provisioning.JdbcUserDetailsManager">
         <property name="dataSource" ref="oAuthDataSource"/>
     </bean>
 
-	<bean id="clientDetailsUserService" class="org.springframework.security.oauth2.provider.client.ClientDetailsUserDetailsService">
-		<constructor-arg ref="clientDetails" />
-	</bean>
-
-	<bean id="tokenServices" class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
-        <property name="tokenStore" ref="nimbleTokenStore"/>
-		<property name="supportRefreshToken" value="true" />
-		<property name="clientDetailsService" ref="clientDetails" />
-	</bean>
+    <bean id="clientDetailsUserService"
+          class="org.springframework.security.oauth2.provider.client.ClientDetailsUserDetailsService">
+        <constructor-arg ref="clientDetails"/>
+    </bean>
 
 
-    <bean id="authorizationCodeServices" class="org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices">
+
+
+    <bean id="authorizationCodeServices"
+          class="org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices">
         <constructor-arg name="dataSource" ref="oAuthDataSource"/>
     </bean>
 
 
     <bean id="clientDetails" class="org.springframework.security.oauth2.provider.JdbcClientDetailsService">
-        <constructor-arg name="dataSource" ref="oAuthDataSource" />
+        <constructor-arg name="dataSource" ref="oAuthDataSource"/>
     </bean>
 
-    <bean id="authReq" class="com.nimble.security.oauth2.spring.provider.authentication.dao.NimbleJdbcAuthorizationRequestDAO">
+    <bean id="authReq"
+          class="com.nimble.security.oauth2.spring.provider.authentication.dao.NimbleJdbcAuthorizationRequestDAO">
         <constructor-arg name="dataSource" ref="oAuthDataSource"/>
     </bean>
 
@@ -66,17 +69,20 @@
         <constructor-arg name="dataSource" ref="oAuthDataSource"/>
     </bean>
 
-    <bean id="auth2AuthenticationRowMapper" class="com.nimble.security.oauth2.spring.provider.authentication.dao.sql.OAuth2AuthenticationRowMapper">
+    <bean id="auth2AuthenticationRowMapper"
+          class="com.nimble.security.oauth2.spring.provider.authentication.dao.sql.OAuth2AuthenticationRowMapper">
     </bean>
 
-    <bean id="oAuth2AuthenticationDAO" class="com.nimble.security.oauth2.spring.provider.authentication.dao.JdbcNimbleOAuth2AuthenticationDAO">
+    <bean id="oAuth2AuthenticationDAO"
+          class="com.nimble.security.oauth2.spring.provider.authentication.dao.JdbcNimbleOAuth2AuthenticationDAO">
         <constructor-arg name="dataSource" ref="oAuthDataSource"/>
         <constructor-arg name="authenticationTokenMapper" ref="auth2AuthenticationRowMapper"/>
     </bean>
 
-    <bean id="oauth2AuthenticationManager" class="com.nimble.security.oauth2.spring.provider.authentication.NimbleOauth2AuthenticationManager">
+    <bean id="oauth2AuthenticationManager"
+          class="com.nimble.security.oauth2.spring.provider.authentication.NimbleOauth2AuthenticationManager">
         <property name="oAuth2AuthenticationDAO" ref="oAuth2AuthenticationDAO"/>
-        <property name="authenticationDAO" ref="authDao" />
+        <property name="authenticationDAO" ref="authDao"/>
         <property name="authorizationRequestDAO" ref="authReq"/>
     </bean>
 
@@ -88,20 +94,19 @@
         <constructor-arg name="dataSource" ref="oAuthDataSource"/>
     </bean>
 
-    <bean id="nimbleTokenStore" class="com.nimble.security.oauth2.spring.provider.token.NimbleTokenStore">
-        <property name="oAuth2AuthenticationDAO" ref="oauth2AuthenticationManager" />
-        <property name="accessTokenDAO" ref="accessTokenDAO" />
-        <property name="refreshTokenDAO" ref="refreshTokenDAO" />
+
+
+    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="autodetectUserTransaction" value="true" />
     </bean>
 
-<!--    <bean id="jdbcTokenStore" class="org.springframework.security.oauth2.provider.token.JdbcTokenStore">
-        <constructor-arg ref="oAuthDataSource"/>
-    </bean>-->
+    <!--    <bean id="jdbcTokenStore" class="org.springframework.security.oauth2.provider.token.JdbcTokenStore">
+            <constructor-arg ref="oAuthDataSource"/>
+        </bean>-->
 
-	<oauth:expression-handler id="oauthExpressionHandler" />
+    <oauth:expression-handler id="oauthExpressionHandler"/>
 
-	<oauth:web-expression-handler id="oauthWebExpressionHandler" />
-
+    <oauth:web-expression-handler id="oauthWebExpressionHandler"/>
 
 
 </beans>
