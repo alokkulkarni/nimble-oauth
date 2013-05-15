@@ -80,32 +80,6 @@ public class RestDelegatingAuthenticationProvider extends AbstractUserDetailsAut
 
     }
 
-
-
-    /*public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        //prepare the request body for execution.
-        MultiValueMap<String, Object> params = new LinkedMultiValueMap<String, Object>();
-        params.add("email", authentication.getName());
-        params.add("password", authentication.getCredentials());
-        params.add("is_persistent", "1");
-
-        //ok, let's see if the user authenticates with the application
-        try {
-            ResponseEntity<Map> response = getRestOperations().postForEntity(createSessionEndpointUrl, params, Map.class, params);
-            //this check is unnecessary as an exception will be thrown if we get a 4xx, 5xx etc
-            if(response.getStatusCode() == HttpStatus.CREATED) {
-                //have a user.  Now need to look up their authorities
-                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken()
-
-            }
-        } catch(HttpStatusCodeException e) {
-            //todo: decipher the cause of the excetion and translate into the correct AuthenticationException
-            throw new BadCredentialsException(e.getResponseBodyAsString(), e);
-        }
-
-        return null;
-    }*/
-
     @Override
     protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
         //prepare the request body for execution.
@@ -137,8 +111,6 @@ public class RestDelegatingAuthenticationProvider extends AbstractUserDetailsAut
                     //authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"));
                 }
                 userDetails = new NimbleUser(uname, (String) authentication.getCredentials(), authorities, token);
-                //TODO: May need to make sure that permissions table in security db is in sync - check to make sure user exists, if
-                //not set up with defaults
             }
         } catch (HttpStatusCodeException e) {
             //todo: decipher the cause of the excetion and translate into the correct AuthenticationException
