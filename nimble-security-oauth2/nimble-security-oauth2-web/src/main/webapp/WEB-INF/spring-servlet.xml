@@ -47,7 +47,7 @@
         <intercept-url pattern="/api/.*"
                        access="#oauth2.clientHasRole('ROLE_CLIENT') and (#oauth2.hasScope('write') or #oauth2.hasScope('read'))"
                 />
-        <intercept-url pattern="/**" access="denyAll()"/>
+        <intercept-url pattern="/org/springframework/security/oauth/examples/sparklr/oauth" access="denyAll()"/>
         <custom-filter ref="requestContextFilter" position="FIRST" />
         <custom-filter ref="unexpectedErrorFilter" before="SECURITY_CONTEXT_FILTER" />
         <custom-filter ref="resourceServerFilter" before="PRE_AUTH_FILTER" />
@@ -70,7 +70,7 @@
 			access="#oauth2.clientHasRole('ROLE_CLIENT') and #oauth2.isClient() and #oauth2.hasScope('read')" method="GET" />-->
         <intercept-url pattern="/oauth/clients/.*"
                        access="#oauth2.clientHasRole('ROLE_CLIENT')" method="GET" />
-		<intercept-url pattern="/**" access="denyAll()"/>
+		<intercept-url pattern="/org/springframework/security/oauth/examples/sparklr/oauth" access="denyAll()"/>
         <custom-filter ref="requestContextFilter" position="FIRST" />
         <custom-filter ref="unexpectedErrorFilter" before="SECURITY_CONTEXT_FILTER" />
 		<custom-filter ref="resourceServerFilter" before="PRE_AUTH_FILTER" />
@@ -82,7 +82,7 @@
 	<http access-denied-page="/login.jsp?authorization_error=true" disable-url-rewriting="true"
 		xmlns="http://www.springframework.org/schema/security">
 		<intercept-url pattern="/oauth/**" access="ROLE_USER" />
-		<intercept-url pattern="/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/org/springframework/security/oauth/examples/sparklr/oauth" access="IS_AUTHENTICATED_ANONYMOUSLY" />
         <custom-filter ref="requestContextFilter" position="FIRST" />
         <custom-filter ref="unexpectedErrorFilter" before="SECURITY_CONTEXT_FILTER" />
 		<form-login authentication-failure-url="/login.jsp?authentication_error=true" default-target-url="/index.jsp"
@@ -233,7 +233,7 @@
             <tx:method name="get*" read-only="true"/>
             <tx:method name="read*" read-only="true"/>
             <!-- all 'store' methods require a transaction -->
-            <tx:method name="store*" propagation="REQUIRED" isolation="REPEATABLE_READ" />
+            <tx:method name="store*" propagation="REQUIRED"  /> <!--isolation="REPEATABLE_READ"-->
             <!-- other methods use the default transaction settings http://static.springsource.org/spring/docs/3.0.x/reference/transaction.html#transaction-declarative-txadvice-settings -->
             <tx:method name="*" />
         </tx:attributes>

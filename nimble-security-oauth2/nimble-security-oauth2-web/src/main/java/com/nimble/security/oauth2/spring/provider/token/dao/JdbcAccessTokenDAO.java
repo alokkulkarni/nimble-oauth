@@ -1,7 +1,6 @@
 package com.nimble.security.oauth2.spring.provider.token.dao;
 
 import com.nimble.security.oauth2.spring.common.NimbleAccessToken;
-import com.nimble.security.oauth2.spring.provider.authentication.IdAwareOAuth2Authentication;
 import com.nimble.security.oauth2.spring.provider.token.dao.sql.AbstractAccessTokenMapper;
 import com.nimble.security.oauth2.spring.provider.token.dao.sql.NimbleAccessTokenMapper;
 import org.apache.commons.logging.Log;

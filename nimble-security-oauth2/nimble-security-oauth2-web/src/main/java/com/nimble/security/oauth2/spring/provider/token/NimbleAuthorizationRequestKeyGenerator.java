@@ -2,9 +2,6 @@ package com.nimble.security.oauth2.spring.provider.token;
 
 import com.nimble.security.oauth2.spring.provider.NimbleAuthorizationRequest;
 import org.springframework.security.oauth2.common.util.OAuth2Utils;
-import org.springframework.security.oauth2.provider.AuthorizationRequest;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.token.AuthenticationKeyGenerator;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;

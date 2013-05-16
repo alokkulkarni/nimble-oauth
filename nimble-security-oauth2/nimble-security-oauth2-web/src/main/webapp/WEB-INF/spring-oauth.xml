@@ -98,6 +98,7 @@
 
     <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
         <property name="autodetectUserTransaction" value="true" />
+        <property name="allowCustomIsolationLevels" value="true" />
     </bean>
 
     <!--    <bean id="jdbcTokenStore" class="org.springframework.security.oauth2.provider.token.JdbcTokenStore">
