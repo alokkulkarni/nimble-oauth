@@ -5,6 +5,7 @@ import com.nimble.security.oauth2.spring.provider.authentication.dao.sql.Default
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.core.Authentication;
@@ -52,7 +53,20 @@ public class JdbcAuthenticationDAO implements AuthenticationDAO {
     }
 
     public Authentication readAuthentication(String id) {
-        return jdbcTemplate.queryForObject(selectSql, authenticationRowMapper, id);
+        Authentication auth = null;
+
+        try {
+            auth = jdbcTemplate.queryForObject(selectSql, authenticationRowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            if (log.isInfoEnabled()) {
+                log.debug("Failed to find Authentication for id " + id);
+            }
+        } catch (IllegalArgumentException e) {
+            log.error("Could not extract Authentication for id " + id);
+        }
+
+
+        return auth;
     }
 
     public int storeAuthentication(Authentication authentication) {
@@ -86,13 +100,13 @@ public class JdbcAuthenticationDAO implements AuthenticationDAO {
 
     //TODO: everything Nimble specific should be in a subclass
     protected String getId(Authentication authentication) {
-        return ((NimbleAuthentication)authentication).getOauth2AuthorizationId();
+        return ((NimbleAuthentication) authentication).getOauth2AuthorizationId();
     }
 
 
     protected Object[] getUpdateValues(String id, Authentication authentication) {
         Set<String> authorities = getAuthorities(authentication);
-        NimbleAuthentication auth = (NimbleAuthentication)authentication;
+        NimbleAuthentication auth = (NimbleAuthentication) authentication;
         return new Object[]{auth.getName(), auth.isAuthenticated(), SerializationUtils.serialize(auth.getPrincipal()),
                 auth.getNimbleToken(), authorities, id
         };
@@ -104,7 +118,7 @@ public class JdbcAuthenticationDAO implements AuthenticationDAO {
 
     protected Object[] getInsertValues(String id, Authentication authentication) {
         Set<String> authorities = getAuthorities(authentication);
-        NimbleAuthentication auth = (NimbleAuthentication)authentication;
+        NimbleAuthentication auth = (NimbleAuthentication) authentication;
         return new Object[]{id, auth.getName(), auth.isAuthenticated(), SerializationUtils.serialize(auth.getPrincipal()),
                 auth.getNimbleToken(), authorities
         };

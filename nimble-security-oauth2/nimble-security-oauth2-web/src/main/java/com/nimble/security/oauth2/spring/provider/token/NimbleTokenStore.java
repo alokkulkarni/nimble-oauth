@@ -1,5 +1,7 @@
 package com.nimble.security.oauth2.spring.provider.token;
 
+import com.nimble.security.oauth2.spring.common.NimbleAccessToken;
+import com.nimble.security.oauth2.spring.common.NimbleRefreshToken;
 import com.nimble.security.oauth2.spring.provider.NimbleOAuth2Authentication;
 import com.nimble.security.oauth2.spring.provider.authentication.Oauth2AuthenticationManager;
 import com.nimble.security.oauth2.spring.provider.token.dao.AccessTokenDAO;
@@ -50,7 +52,7 @@ public class NimbleTokenStore implements TokenStore {
 
     public void storeAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
         //make sure the authorization is up to date.  Will want to associate with auth with the token
-        String authId = oauth2AuthenticationManager.getIdForOAuth2Authentication(authentication, true);
+        String authId = getOAuth2AuthenticationIdForAccessToken(authentication, token, true);
         accessTokenDAO.storeAccessToken(token, authId, authentication);
     }
 
@@ -65,7 +67,7 @@ public class NimbleTokenStore implements TokenStore {
 
     public void storeRefreshToken(OAuth2RefreshToken refreshToken, OAuth2Authentication authentication) {
         //make sure the authorization is up to date.  Will want to associate with auth with the token
-        String authId = oauth2AuthenticationManager.getIdForOAuth2Authentication(authentication, true);
+        String authId = getOAuth2AuthenticationIdForRefreshToken(authentication, refreshToken, true);
         refreshTokenDAO.storeRefreshToken(refreshToken, authId);
     }
 
@@ -118,5 +120,45 @@ public class NimbleTokenStore implements TokenStore {
             }
         }
         return value;
+    }
+
+    /**
+     * Many operations on tokens require a reference to a parent Authentication record.  The structure behind this can be
+     * very implementation specific so this is an overridable method.  The default implementation here is very Nimble/
+     * data structure specific
+     *
+     * @param authentication
+     * @param token
+     * @param required
+     * @return
+     */
+    protected String getOAuth2AuthenticationIdForRefreshToken(OAuth2Authentication authentication, OAuth2RefreshToken token,
+                                                              boolean required) {
+        String authId = null;
+        if (token instanceof NimbleRefreshToken) {
+            authId = ((NimbleRefreshToken) token).getAuthenticationId();
+        }
+        if (authId == null && authentication instanceof NimbleOAuth2Authentication) {
+            authId = ((NimbleOAuth2Authentication) authentication).getAuthenticationId();
+        }
+        if (authId == null) {
+            authId = oauth2AuthenticationManager.getIdForOAuth2Authentication(authentication, required);
+        }
+        return authId;
+    }
+
+    protected String getOAuth2AuthenticationIdForAccessToken(OAuth2Authentication authentication, OAuth2AccessToken token,
+                                                             boolean required) {
+        String authId = null;
+        if (token instanceof NimbleAccessToken) {
+            authId = ((NimbleAccessToken) token).getAuthenticationId();
+        }
+        if (authId == null && authentication instanceof NimbleOAuth2Authentication) {
+            authId = ((NimbleOAuth2Authentication) authentication).getAuthenticationId();
+        }
+        if (authId == null) {
+            authId = oauth2AuthenticationManager.getIdForOAuth2Authentication(authentication, required);
+        }
+        return authId;
     }
 }

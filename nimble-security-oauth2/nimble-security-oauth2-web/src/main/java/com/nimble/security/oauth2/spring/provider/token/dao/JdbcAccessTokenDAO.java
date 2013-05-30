@@ -117,7 +117,7 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<OAuth2AccessToken> {
     }
 
     public void storeAccessToken(OAuth2AccessToken base, String authenticationId, OAuth2Authentication authentication) {
-        NimbleAccessToken token = createAccessToken(base);
+        NimbleAccessToken token = createAccessToken(base, authenticationId);
         int id = token.getId();
         if (id <= 0) {
             log.debug("Creating storeAccessToken: " + token);
@@ -128,7 +128,7 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<OAuth2AccessToken> {
             params.addValue("scope", StringUtils.collectionToCommaDelimitedString(token.getScope()), Types.VARCHAR);
             params.addValue("expiration", token.getExpiration(), Types.TIMESTAMP);
             params.addValue("refresh_token", token.getRefreshToken(), Types.VARCHAR);
-            params.addValue("authentication_id", authenticationId, Types.VARCHAR);
+            params.addValue("authentication_id", token.getAuthenticationId(), Types.VARCHAR);
             params.addValue("is_encrypted", token.isEncrypted(), Types.TINYINT);
             params.addValue("additional_info", SerializationUtils.serialize(token.getAdditionalInformation()), Types.BLOB);
 
@@ -153,11 +153,13 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<OAuth2AccessToken> {
         jdbcTemplate.update(deleteAccessTokenByRefreshTokenSql, refreshToken.getValue());
     }
 
-    private NimbleAccessToken createAccessToken(OAuth2AccessToken base) {
-        if(base instanceof NimbleAccessToken) {
-            return (NimbleAccessToken)base;
+    private NimbleAccessToken createAccessToken(OAuth2AccessToken base, String authenticationId) {
+        if (base instanceof NimbleAccessToken) {
+            return (NimbleAccessToken) base;
         } else {
-            return new NimbleAccessToken(base);
+            NimbleAccessToken t = new NimbleAccessToken(base);
+            t.setAuthenticationId(authenticationId);
+            return t;
         }
     }
 

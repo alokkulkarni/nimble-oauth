@@ -3,6 +3,7 @@ package com.nimble.security.oauth2.spring.provider.token.dao;
 import com.nimble.security.oauth2.spring.common.NimbleRefreshToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
@@ -32,15 +33,13 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
     }
 
     public void storeRefreshToken(OAuth2RefreshToken refreshToken, String authId) {
-
         NimbleRefreshToken token = createRefreshToken(refreshToken, authId);
-        token.setAuthenticationId(authId);
         if (token.getId() <= 0) {
             //need to have an ID to avoid going to the DB to see if the token exists or doing an insert upon
             //failed update.
             //going to create.  The refresh token value should be unique so may want to do a delete here to make sure it
             //is clean.  This *could* cause a fk problem.  Otherwise we *could* have a unique key problem
-             jdbcTemplate.update(insertSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue()},
+            jdbcTemplate.update(insertSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue()},
                     new int[]{Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.VARCHAR});
         } else {
             jdbcTemplate.update(updateSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue(), token.getId()},
@@ -51,7 +50,19 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
 
     public OAuth2RefreshToken readRefreshToken(String tokenValue) {
         //will return a NimbleRefreshToken (RowMapper)
-        return jdbcTemplate.queryForObject(selectSql, mapper, tokenValue);
+        OAuth2RefreshToken auth = null;
+
+        try {
+            auth = jdbcTemplate.queryForObject(selectSql, mapper, tokenValue);
+        } catch (EmptyResultDataAccessException e) {
+            if (log.isInfoEnabled()) {
+                log.debug("Failed to find OAuth2RefreshToken for id " + tokenValue);
+            }
+        } catch (IllegalArgumentException e) {
+            log.error("Could not extract OAuth2RefreshToken for id " + tokenValue);
+        }
+
+        return auth;
     }
 
     public void removeRefreshToken(OAuth2RefreshToken token) {
@@ -67,8 +78,8 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
     }
 
     private NimbleRefreshToken createRefreshToken(OAuth2RefreshToken base, String authId) {
-        if(base instanceof NimbleRefreshToken) {
-            return (NimbleRefreshToken)base;
+        if (base instanceof NimbleRefreshToken) {
+            return (NimbleRefreshToken) base;
         } else {
             NimbleRefreshToken t = new NimbleRefreshToken(base);
             t.setAuthenticationId(authId);

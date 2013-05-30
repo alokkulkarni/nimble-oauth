@@ -4,6 +4,7 @@ import com.nimble.security.oauth2.spring.provider.authentication.dao.sql.Default
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,7 +45,19 @@ public abstract class JdbcAuthorizationRequestDAO implements AuthorizationReques
     }
 
     public AuthorizationRequest getAuthorizationRequest(String requestId) {
-        return jdbcTemplate.queryForObject(selectSql, authRequestRowMapper, requestId);
+        AuthorizationRequest auth = null;
+
+        try {
+            auth = jdbcTemplate.queryForObject(selectSql, authRequestRowMapper, requestId);
+        } catch (EmptyResultDataAccessException e) {
+            if (log.isInfoEnabled()) {
+                log.debug("Failed to find AuthorizationRequest for id " + requestId);
+            }
+        } catch (IllegalArgumentException e) {
+            log.error("Could not extract AuthorizationRequest for id " + requestId);
+        }
+
+        return auth;
     }
 
     public void setSelectSql(String selectSql) {

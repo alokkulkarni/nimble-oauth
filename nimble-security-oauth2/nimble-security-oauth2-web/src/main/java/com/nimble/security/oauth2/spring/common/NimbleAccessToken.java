@@ -14,6 +14,7 @@ public class NimbleAccessToken extends DefaultOAuth2AccessToken {
     private boolean isEncrypted = false;
     private Date created;
     private Date updated;
+    private String authenticationId;
 
     public int getId() {
         return id;
@@ -37,6 +38,15 @@ public class NimbleAccessToken extends DefaultOAuth2AccessToken {
 
     public void setUpdated(Date updated) {
         this.updated = updated;
+    }
+
+
+    public String getAuthenticationId() {
+        return authenticationId;
+    }
+
+    public void setAuthenticationId(String authenticationId) {
+        this.authenticationId = authenticationId;
     }
 
     public NimbleAccessToken(String value) {
