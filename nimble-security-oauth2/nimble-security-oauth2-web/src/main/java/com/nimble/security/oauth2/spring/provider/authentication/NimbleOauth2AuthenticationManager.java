@@ -78,10 +78,10 @@ public class NimbleOauth2AuthenticationManager implements Oauth2AuthenticationMa
 
     public NimbleOAuth2Authentication readAuthenticationById(String authenticationId) {
         //this is a composition object of both the client and user auth
-        NimbleOauth2VO base = oAuth2AuthenticationDAO.readAuthenticationForRefreshToken(authenticationId);
+        NimbleOauth2VO base = oAuth2AuthenticationDAO.readAuthenticationById(authenticationId);
         NimbleOAuth2Authentication auth = buildNimbleOAuth2Authentication(base);
         if (auth == null) {
-            log.warn("readAuthenticationByAccessToken: Unable to locate authentication for access token=" + authenticationId);
+            //log.warn("readAuthenticationByAccessToken: Unable to locate authentication for access token=" + authenticationId);
         }
         return auth;
     }
