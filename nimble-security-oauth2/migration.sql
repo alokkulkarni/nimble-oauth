@@ -108,7 +108,8 @@ inner join api_import.client_application_label_values cav on k.client_applicatio
 alter table o_two_refresh_tokens add column `clientid` varchar(255) DEFAULT NULL;
 alter table o_two_refresh_tokens add column `auth_code` varchar(255) DEFAULT NULL;
 
-create temporary table clientid_users as (
+--create temporary table clientid_users as (
+create table clientid_users as (
 select ci.clientid, ci.userid, ci.auth_code, count(1) as consent_cnt from consent_informations ci
 LEFT JOIN o_two_refresh_tokens rt on ci.userid=rt.userid
 group by ci.clientid,ci.userid

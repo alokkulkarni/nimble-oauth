@@ -1,4 +1,4 @@
-package org.springframework.security.oauth.examples.sparklr.mvc;
+package com.nimble.mvc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
@@ -13,8 +13,6 @@ import java.util.Map;
 
 /**
  * Controller for retrieving the model for and displaying the confirmation page for access to a protected resource.
- *
- * @author Ryan Heaton
  */
 @Controller
 @SessionAttributes("authorizationRequest")

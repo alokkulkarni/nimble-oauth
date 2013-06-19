@@ -70,8 +70,9 @@ public class NimbleOauth2AuthenticationManager implements Oauth2AuthenticationMa
         clientRequest.setAuthorizationId(auth2Id);
         userAuthentication.setOauth2AuthorizationId(auth2Id);
 
-        authorizationRequestDAO.storeAuthorizationRequest(clientRequest);
         authenticationDAO.storeAuthentication(userAuthentication);
+        authorizationRequestDAO.storeAuthorizationRequest(clientRequest);
+
 
         return auth2Authentication;
     }

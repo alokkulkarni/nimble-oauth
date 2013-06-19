@@ -51,7 +51,7 @@
         <intercept-url pattern="/api/.*"
                        access="#oauth2.clientHasRole('ROLE_CLIENT') and (#oauth2.hasScope('write') or #oauth2.hasScope('read'))"
                 />
-        <intercept-url pattern="/org/springframework/security/oauth/examples/sparklr/oauth" access="denyAll()"/>
+
         <custom-filter ref="requestContextFilter" position="FIRST"/>
         <custom-filter ref="unexpectedErrorFilter" before="SECURITY_CONTEXT_FILTER"/>
         <custom-filter ref="resourceServerFilter" before="PRE_AUTH_FILTER"/>
@@ -75,7 +75,6 @@
             access="#oauth2.clientHasRole('ROLE_CLIENT') and #oauth2.isClient() and #oauth2.hasScope('read')" method="GET" />-->
         <intercept-url pattern="/oauth/clients/.*"
                        access="#oauth2.clientHasRole('ROLE_CLIENT')" method="GET"/>
-        <intercept-url pattern="/org/springframework/security/oauth/examples/sparklr/oauth" access="denyAll()"/>
         <custom-filter ref="requestContextFilter" position="FIRST"/>
         <custom-filter ref="unexpectedErrorFilter" before="SECURITY_CONTEXT_FILTER"/>
         <custom-filter ref="resourceServerFilter" before="PRE_AUTH_FILTER"/>
@@ -87,8 +86,6 @@
     <http access-denied-page="/login.jsp?authorization_error=true" disable-url-rewriting="true"
           xmlns="http://www.springframework.org/schema/security">
         <intercept-url pattern="/oauth/**" access="ROLE_USER"/>
-        <intercept-url pattern="/org/springframework/security/oauth/examples/sparklr/oauth"
-                       access="IS_AUTHENTICATED_ANONYMOUSLY"/>
         <custom-filter ref="requestContextFilter" position="FIRST"/>
         <custom-filter ref="unexpectedErrorFilter" before="SECURITY_CONTEXT_FILTER"/>
         <form-login authentication-failure-url="/login.jsp?authentication_error=true" default-target-url="/index.jsp"
@@ -160,24 +157,6 @@
             </set>
         </property>
     </bean>
-    <!--<oauth:client-details-service id="clientDetails">
-        <oauth:client client-id="my-trusted-client" authorized-grant-types="password,authorization_code,refresh_token,implicit"
-            authorities="ROLE_CLIENT, ROLE_TRUSTED_CLIENT" scope="read,write,trust" access-token-validity="60" />
-        <oauth:client client-id="my-trusted-client-with-secret" authorized-grant-types="password,authorization_code,refresh_token,implicit"
-            secret="somesecret" authorities="ROLE_CLIENT, ROLE_TRUSTED_CLIENT" />
-        <oauth:client client-id="my-client-with-secret" authorized-grant-types="client_credentials" authorities="ROLE_CLIENT"
-            scope="read" secret="secret" />
-        <oauth:client client-id="my-less-trusted-client" authorized-grant-types="authorization_code,implicit"
-            authorities="ROLE_CLIENT" />
-        <oauth:client client-id="my-less-trusted-autoapprove-client" authorized-grant-types="implicit"
-            authorities="ROLE_CLIENT" />
-        <oauth:client client-id="my-client-with-registered-redirect" authorized-grant-types="authorization_code,client_credentials"
-            authorities="ROLE_CLIENT" redirect-uri="http://anywhere?key=value" scope="read,trust" />
-        <oauth:client client-id="my-untrusted-client-with-registered-redirect" authorized-grant-types="authorization_code"
-            authorities="ROLE_CLIENT" redirect-uri="http://anywhere" scope="read" />
-        <oauth:client client-id="tonr" resource-ids="sparklr" authorized-grant-types="authorization_code,implicit"
-            authorities="ROLE_CLIENT" scope="read,write" secret="secret" />
-    </oauth:client-details-service>-->
 
     <mvc:annotation-driven/>
 
@@ -215,11 +194,6 @@
         </property>
     </bean>
 
-    <!--<bean id="photoController" class="org.springframework.security.oauth.examples.sparklr.mvc.PhotoController">
-        <property name="photoService" ref="photoServices" />
-    </bean>-->
-
-
     <bean id="adminController" class="com.nimble.mvc.AdminController">
         <property name="tokenServices" ref="tokenServices"/>
         <property name="userApprovalHandler" ref="userApprovalHandler"/>
@@ -227,7 +201,7 @@
 
     <!-- Override the default mappings for approval and error pages -->
     <bean id="accessConfirmationController"
-          class="org.springframework.security.oauth.examples.sparklr.mvc.AccessConfirmationController">
+          class="com.nimble.mvc.AccessConfirmationController">
         <property name="clientDetailsService" ref="clientDetails"/>
     </bean>
 

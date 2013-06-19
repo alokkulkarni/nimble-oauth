@@ -1,32 +1,186 @@
-DROP TABLE acl_sid;
-CREATE TABLE acl_sid ( id bigint unsigned NOT NULL AUTO_INCREMENT, principal tinyint(1) NOT NULL, sid varchar(100) NOT NULL, PRIMARY KEY (id), CONSTRAINT acl_sid_idx_1 UNIQUE (sid, principal) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-DROP TABLE acl_class;
-CREATE TABLE acl_class ( id bigint unsigned NOT NULL AUTO_INCREMENT, class varchar(100) NOT NULL, PRIMARY KEY (id), CONSTRAINT class UNIQUE (class) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-DROP TABLE acl_object_identity;
-CREATE TABLE acl_object_identity ( id bigint unsigned NOT NULL AUTO_INCREMENT, object_id_class bigint unsigned NOT NULL, object_id_identity bigint unsigned NOT NULL, parent_object bigint unsigned, owner_sid bigint unsigned, entries_inheriting tinyint(1) NOT NULL, PRIMARY KEY (id), FOREIGN KEY (object_id_class) REFERENCES acl_class (id) , FOREIGN KEY (parent_object) REFERENCES acl_object_identity (id) , FOREIGN KEY (owner_sid) REFERENCES acl_sid (id), CONSTRAINT acl_object_identity_idx_1 UNIQUE (object_id_class, object_id_identity), INDEX parent_object (parent_object), INDEX owner_sid (owner_sid) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-DROP TABLE acl_entry;
-CREATE TABLE acl_entry ( id bigint unsigned NOT NULL AUTO_INCREMENT, acl_object_identity bigint unsigned NOT NULL, ace_order int(10) unsigned NOT NULL, sid bigint unsigned NOT NULL, mask int NOT NULL, granting tinyint(1) NOT NULL, audit_success tinyint(1) NOT NULL, audit_failure tinyint(1) NOT NULL, PRIMARY KEY (id), FOREIGN KEY (acl_object_identity) REFERENCES acl_object_identity (id) , FOREIGN KEY (sid) REFERENCES acl_sid (id), CONSTRAINT acl_entry_idx_1 UNIQUE (acl_object_identity, ace_order), INDEX sid (sid) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-DROP TABLE authorities;
-CREATE TABLE authorities ( username varchar(50) NOT NULL, authority varchar(50) NOT NULL, FOREIGN KEY (username) REFERENCES users (username), CONSTRAINT authorities_idx_1 UNIQUE (username, authority) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-insert into authorities (username, authority) values ('default_user', 'ROLE_USER');
-DROP TABLE group_authorities;
-CREATE TABLE group_authorities ( group_id bigint unsigned NOT NULL, authority varchar(50) NOT NULL, FOREIGN KEY (group_id) REFERENCES groups (id), INDEX group_id (group_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-DROP TABLE group_members;
-CREATE TABLE group_members ( id bigint unsigned NOT NULL AUTO_INCREMENT, username varchar(50) NOT NULL, group_id bigint unsigned NOT NULL, PRIMARY KEY (id), FOREIGN KEY (group_id) REFERENCES groups (id), INDEX group_id (group_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-DROP TABLE groups;
-CREATE TABLE groups ( id bigint unsigned NOT NULL AUTO_INCREMENT, group_name varchar(50) NOT NULL, PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-insert into groups (id, group_name) values (1, 'default_group');
-DROP TABLE oauth_access_token;
-CREATE TABLE oauth_access_token ( token_id varchar(256), token blob, authentication_id varchar(256), user_name varchar(256), client_id varchar(256), authentication blob, refresh_token varchar(256), access_token_validity int, refresh_token_validity int ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-DROP TABLE oauth_client_details;
-CREATE TABLE oauth_client_details ( client_id varchar(256) NOT NULL, resource_ids varchar(1024), client_secret varchar(256), scope varchar(256), authorized_grant_types varchar(256), web_server_redirect_uri varchar(1024), authorities varchar(256), access_token_validity int DEFAULT '0', refresh_token_validity int DEFAULT '0', additional_information varchar(4096), PRIMARY KEY (client_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-insert into oauth_client_details (client_id, resource_ids, client_secret, scope, authorized_grant_types, web_server_redirect_uri, authorities, access_token_validity, refresh_token_validity, additional_information) values ('nimble', null, 'mysecret', null, 'authorization_code,refresh_token', 'http://localhost:8080/nimble-provider', 'CLIENT', 600, 0, null);
-DROP TABLE oauth_code;
-CREATE TABLE oauth_code ( code varchar(255) NOT NULL, authentication blob NOT NULL, PRIMARY KEY (code) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-DROP TABLE oauth_refresh_token;
-CREATE TABLE oauth_refresh_token ( TOKEN_ID varchar(64) NOT NULL, TOKEN blob NOT NULL, authentication blob NOT NULL, PRIMARY KEY (TOKEN_ID) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-DROP TABLE persistent_logins;
-CREATE TABLE persistent_logins ( username varchar(64) NOT NULL, series varchar(64) NOT NULL, token varchar(64) NOT NULL, last_used timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (series) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*
+drop table acl_entry;
+drop table acl_object_identity;
+drop table acl_sid;
+drop table acl_class;
+
+drop table authorities;
+drop table group_authorities;
+drop table group_members;
+drop table groups;
+drop table oauth_access_token;
+drop table oauth_code;
+drop table oauth_refresh_token;
+drop table users;
+drop table oauth_client_details;
+drop table persistent_logins;
+*/
+
+--remove all foreign keys so can do table manipulation
+alter table authorities drop foreign key fk_users_username;
+alter table group_authorities drop foreign key fk_grp_auth_grp_id;
+alter table group_members drop foreign key fk_grp_member_grp_id;
+alter table oauth2_access_token drop foreign key fk_access_authorization_id;
+alter table oauth2_authentication drop foreign key fk_auth_id_authorization_id;
+alter table oauth2_authorization_request drop foreign key fk_authorization_auth_id;
+alter table oauth2_authorization_request drop foreign key fk_authorization_client_id;
+alter table oauth2_refresh_token drop foreign key fk_refresh_authorization_id;
+
+
 DROP TABLE users;
 CREATE TABLE users ( username varchar(50) NOT NULL, password varchar(50) NOT NULL, enabled tinyint(1) NOT NULL, PRIMARY KEY (username) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 insert into users (username, password, enabled) values ('default_user', 'NULL_VALUE', true);
+
+DROP TABLE authorities;
+CREATE TABLE authorities ( username varchar(50) NOT NULL, authority varchar(50) NOT NULL, CONSTRAINT authorities_idx_1 UNIQUE (username, authority) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+insert into authorities (username, authority) values ('default_user', 'ROLE_USER');
+
+DROP TABLE oauth_code;
+CREATE TABLE oauth_code ( code varchar(255) NOT NULL, authentication blob NOT NULL, PRIMARY KEY (code) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE oauth_client_details;
+CREATE TABLE oauth_client_details ( client_id varchar(256) NOT NULL, resource_ids varchar(1024), client_secret varchar(256), scope varchar(256), authorized_grant_types varchar(256), web_server_redirect_uri varchar(1024), authorities varchar(256), access_token_validity int DEFAULT '0', refresh_token_validity int DEFAULT '0', additional_information varchar(4096), PRIMARY KEY (client_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE persistent_logins;
+CREATE TABLE persistent_logins ( username varchar(64) NOT NULL, series varchar(64) NOT NULL, token varchar(64) NOT NULL, last_used timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (series) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE groups;
+CREATE TABLE groups ( id bigint unsigned NOT NULL AUTO_INCREMENT, group_name varchar(50) NOT NULL, PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+insert into groups (id, group_name) values (1, 'default_group');
+
+DROP TABLE group_authorities;
+CREATE TABLE group_authorities ( group_id bigint unsigned NOT NULL, authority varchar(50) NOT NULL, INDEX group_id (group_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE group_members;
+CREATE TABLE group_members ( id bigint unsigned NOT NULL AUTO_INCREMENT, username varchar(50) NOT NULL, group_id bigint unsigned NOT NULL, PRIMARY KEY (id), INDEX group_id (group_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE oauth2_access_token;
+CREATE TABLE oauth2_access_token ( id int NOT NULL AUTO_INCREMENT, access_token varchar(256), token_type varchar(256), scope varchar(256), expiration datetime, refresh_token varchar(256), authentication_id varchar(64) NOT NULL, is_encrypted tinyint(1), additional_info blob, created_date datetime, updated_date datetime, PRIMARY KEY (id), INDEX fk_access_authorization_id (authentication_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE oauth2_authentication;
+CREATE TABLE oauth2_authentication ( oauth2AuthenticationId varchar(64) NOT NULL, username varchar(256) NOT NULL, authenticated tinyint(1), principal blob, nimble_token varchar(64) NOT NULL, authorities varchar(256), created_date datetime DEFAULT CURRENT_TIMESTAMP, updated_date datetime DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (oauth2AuthenticationId)) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE oauth2_authorization;
+CREATE TABLE oauth2_authorization ( id varchar(64) NOT NULL, authenticated tinyint(1), details blob, created_date datetime DEFAULT CURRENT_TIMESTAMP, updated_date datetime DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE oauth2_authorization_request;
+CREATE TABLE oauth2_authorization_request ( id varchar(64) NOT NULL, client_id varchar(256) NOT NULL, username varchar(256) NOT NULL, approved tinyint(1), scope varchar(256), resource_ids varchar(256), authorities varchar(256), redirect_uri varchar(256), auth_params blob, approve_params blob, created_date datetime DEFAULT CURRENT_TIMESTAMP, updated_date datetime DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id), INDEX fk_authorization_client_id (client_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE oauth2_refresh_token;
+CREATE TABLE oauth2_refresh_token ( id int NOT NULL AUTO_INCREMENT, refresh_token varchar(256), expiration datetime, authentication_id varchar(64) NOT NULL, times_used int DEFAULT '0', created_date datetime DEFAULT CURRENT_TIMESTAMP, updated_date datetime DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id),  INDEX fk_refresh_authorization_id (authentication_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE oauth_client_details;
+CREATE TABLE oauth_client_details ( client_id varchar(256) NOT NULL, name varchar(64), app_type varchar(64), description text, resource_ids varchar(1024), client_secret varchar(256), scope varchar(256), authorized_grant_types varchar(256), web_server_redirect_uri varchar(1024), authorities varchar(256), access_token_validity int DEFAULT '0', refresh_token_validity int DEFAULT '0', additional_information varchar(4096), created datetime, updated datetime, PRIMARY KEY (client_id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE oauth_code;
+CREATE TABLE oauth_code ( code varchar(255) NOT NULL, authentication blob NOT NULL, PRIMARY KEY (code) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE persistent_logins;
+CREATE TABLE persistent_logins ( username varchar(64) NOT NULL, series varchar(64) NOT NULL, token varchar(64) NOT NULL, last_used timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (series) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE users;
+CREATE TABLE users ( username varchar(50) NOT NULL, password varchar(50) NOT NULL, enabled tinyint(1) NOT NULL, PRIMARY KEY (username) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+insert into users (username, password, enabled) values ('default_user', 'NULL_VALUE', true);
+
+
+
+--add all foreign keys
+alter table authorities add constraint fk_users_username foreign key (username) references  users (username);
+alter table group_authorities add constraint fk_grp_auth_grp_id foreign key (group_id) references  groups (id);
+alter table group_members add constraint fk_grp_member_grp_id foreign key (group_id) references  groups (id);
+alter table oauth2_access_token add constraint fk_access_authorization_id foreign key (authentication_id) references oauth2_authorization (id);
+alter table oauth2_authentication add constraint fk_auth_id_authorization_id foreign key (oauth2AuthenticationId) references oauth2_authorization (id);
+alter table oauth2_authorization_request add constraint fk_authorization_auth_id foreign key (id) references oauth2_authorization (id);
+alter table oauth2_authorization_request add constraint fk_authorization_client_id foreign key (client_id) references oauth_client_details (client_id);
+alter table oauth2_refresh_token add constraint fk_refresh_authorization_id foreign key (authentication_id) references oauth2_authorization (id);
+
+
+--triggers
+DROP TRIGGER ACCESS_TOKEN_ON_BEFORE_CREATE;
+--/
+CREATE TRIGGER ACCESS_TOKEN_ON_BEFORE_CREATE
+BEFORE INSERT ON 
+oauth2_access_token
+FOR EACH ROW BEGIN
+set NEW.created_date=current_timestamp;
+set NEW.updated_date=current_timestamp;
+END
+/
+DROP TRIGGER ACCESS_TOKEN_ON_BEFORE_UPDATE;
+--/
+CREATE TRIGGER ACCESS_TOKEN_ON_BEFORE_UPDATE
+BEFORE UPDATE ON 
+oauth2_access_token
+FOR EACH ROW set NEW.updated_date=current_timestamp
+/
+DROP TRIGGER AUTHORIZATION_ON_BEFORE_CREATE;
+--/
+CREATE TRIGGER AUTHORIZATION_ON_BEFORE_CREATE
+BEFORE INSERT ON 
+oauth2_authorization
+FOR EACH ROW BEGIN
+set NEW.created_date=current_timestamp;
+set NEW.updated_date=current_timestamp;
+END
+/
+DROP TRIGGER AUTHORIZATION_ON_BEFORE_UPDATE;
+--/
+CREATE TRIGGER AUTHORIZATION_ON_BEFORE_UPDATE
+BEFORE UPDATE ON 
+oauth2_authorization
+FOR EACH ROW set NEW.updated_date=current_timestamp
+/
+DROP TRIGGER AUTHORIZATION_REQ_ON_BEFORE_CREATE;
+--/
+CREATE TRIGGER AUTHORIZATION_REQ_ON_BEFORE_CREATE
+BEFORE INSERT ON 
+oauth2_authorization_request
+FOR EACH ROW BEGIN
+set NEW.created_date=current_timestamp;
+set NEW.updated_date=current_timestamp;
+END
+/
+DROP TRIGGER AUTHORIZATION_REQ_ON_BEFORE_UPDATE;
+--/
+CREATE TRIGGER AUTHORIZATION_REQ_ON_BEFORE_UPDATE
+BEFORE UPDATE ON 
+oauth2_authorization_request
+FOR EACH ROW set NEW.updated_date=current_timestamp
+/
+DROP TRIGGER AUTH_ON_BEFORE_CREATE;
+--/
+CREATE TRIGGER AUTH_ON_BEFORE_CREATE
+BEFORE INSERT ON 
+oauth2_authentication
+FOR EACH ROW BEGIN
+set NEW.created_date=current_timestamp;
+set NEW.updated_date=current_timestamp;
+END
+/
+DROP TRIGGER AUTH_ON_BEFORE_UPDATE;
+--/
+CREATE TRIGGER AUTH_ON_BEFORE_UPDATE
+BEFORE UPDATE ON 
+oauth2_authentication
+FOR EACH ROW set NEW.updated_date=current_timestamp
+/
+DROP TRIGGER REFRESH_TOKEN_ON_BEFORE_CREATE;
+--/
+CREATE TRIGGER REFRESH_TOKEN_ON_BEFORE_CREATE
+BEFORE INSERT ON 
+oauth2_refresh_token
+FOR EACH ROW BEGIN
+set NEW.created_date=current_timestamp;
+set NEW.updated_date=current_timestamp;
+END
+/
+DROP TRIGGER REFRESH_TOKEN_ON_BEFORE_UPDATE;
+--/
+CREATE TRIGGER REFRESH_TOKEN_ON_BEFORE_UPDATE
+BEFORE UPDATE ON 
+oauth2_refresh_token
+FOR EACH ROW set NEW.updated_date=current_timestamp
+/
+
+

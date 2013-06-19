@@ -1,0 +1,173 @@
+body {
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+    width: 100%;
+    height: 100%;
+    font-family: arial, helvetica, sans-serif;
+}
+
+.header {
+    height: 60px;
+    background: #2f88cd;
+}
+
+.header .logo {
+    height: 60px;
+    text-indent: -999em;
+    background: url(/images/logo.png) 0 0 no-repeat;
+    width: 215px;
+    display: block;
+    position: relative;
+    top: 7px;
+    outline: 0;
+}
+
+.main_body {
+    padding: 50px;
+}
+
+.welcome_str {
+    font-size: 19px;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 15px;
+}
+
+.pr_quote {
+    float: left;
+    width: 230px;
+}
+
+.pr_quote .quotation {
+    font-size: 14px;
+    padding-bottom: 20px;
+}
+
+.pr_quote .quote_author {
+    font-size: 19px;
+    font-weight: bold;
+    color: #000;
+}
+
+.pr_quote .quote_title {
+    font-size: 16px;
+    color: #a0a0a0;
+}
+
+.rightColumn {
+    float: left;
+    margin-left: 50px;
+}
+
+.login_form {
+    width: 290px;
+    height: 200px;
+    border-radius: 7px;
+    -webkit-border-radius: 7px;
+    -moz-border-radius: 7px;
+    background: url(/images/background.png) 0 0 repeat;
+    padding: 30px;
+    border: 1px solid #d6d6d6;
+}
+
+.login_form .password {
+    display: none;
+}
+
+.sign_in {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.greyText {
+    color: #d6d6d6;
+}
+
+.login_form .formInput, .login_form .pwdField {
+    padding: 5px;
+    margin: 5px 0;
+    border: 2px solid #d6d6d6;
+    font-size: 14px;
+    width: 278px;
+}
+
+.login_form .errorBox {
+    padding: 10px 0 0;
+    color: red;
+}
+
+.login_form .submitBtn {
+    width: 290px;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid #f5972c;
+    background-color: #ffb716;
+    color: #fbfbfb;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0;
+    cursor: pointer;
+}
+
+.login_form .forgotPwd {
+    text-align: right;
+}
+
+a {
+    color: #2f88cd;
+    text-decoration: none;
+}
+
+.rightColumn .newAccount {
+    padding-top: 15px;
+    text-align: center;
+    color: #a0a0a0;
+}
+
+#step2 .authorizeList {
+    color: #0079C2;
+    margin: 0;
+    padding: 0;
+}
+
+#step2 .authorizeList li {
+    font-size: 16px;
+    list-style-type: disc;
+    margin-left: 20px;
+    margin-top: 6px;
+}
+
+#step2 .authorizeList li span {
+    color: #a0a0a0;
+}
+
+#step2 .authorizeButton {
+    width: 160px;
+    height: 40px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background-color: #2f88cd;
+    border: 0;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 25px 15px 0 0;
+    cursor: pointer;
+}
+
+#step2 .declineButton {
+    width: 160px;
+    height: 40px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background-color: #dadada;
+    border: 0;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 25px 15px 0 0;
+    cursor: pointer;
+}

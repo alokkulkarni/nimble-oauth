@@ -1,0 +1,6 @@
+1. Place configured jboss-as-7.1.1.Final in /usr/local/
+2. Symlink /usr/local/jboss-as-7.1.1.Final /usr/local/jboss
+3. Environment variables set for DB (.nimble_profile in ec2-user)
+4. Port 8080 will server content to LB
+5. Port 9990 will server admin console - should be accessible via remote web browser when on VPN
+6. To run: standalone.sh -b 0.0.0.0
