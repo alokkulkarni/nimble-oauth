@@ -88,7 +88,9 @@ public class RestDelegatingAuthenticationProvider extends AbstractUserDetailsAut
         params.add("password", authentication.getCredentials());
         params.add("is_persistent", "1");
         UserDetails userDetails = null;
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("retrieveUser: start: username=" + username);
+        }
         //ok, let's see if the user authenticates with the application
         try {
             ResponseEntity<Map> response = getRestOperations().postForEntity(createSessionEndpointUrl, params, Map.class, params);
@@ -111,12 +113,15 @@ public class RestDelegatingAuthenticationProvider extends AbstractUserDetailsAut
                     //authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"));
                 }
                 userDetails = new NimbleUser(uname, (String) authentication.getCredentials(), authorities, token);
+            } else {
+                logger.warn("retrieveUser: username=" + username + "unexpected http response: " + response.getStatusCode());
             }
         } catch (HttpStatusCodeException e) {
             //todo: decipher the cause of the excetion and translate into the correct AuthenticationException
             throw new BadCredentialsException(e.getResponseBodyAsString(), e);
         }
 
+        logger.info("retrieveUser: end: username=" + username + ", found=" + (userDetails != null ? "true" : "false"));
         return userDetails;
     }
 
@@ -124,7 +129,6 @@ public class RestDelegatingAuthenticationProvider extends AbstractUserDetailsAut
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
-
 
     public boolean supports(Class<?> aClass) {
         return Authentication.class.isAssignableFrom(aClass);

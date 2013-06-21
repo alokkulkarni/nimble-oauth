@@ -49,6 +49,7 @@ public class NimbleOauth2AuthenticationManager implements Oauth2AuthenticationMa
     }
 
     public NimbleOAuth2Authentication storeOAuth2Authentication(OAuth2Authentication authentication) {
+        log.info("storeOAuth2Authentication: start: authentication=" + authentication);
         //will deconstruct the pieces of the oauth authentication for storage
         AuthorizationRequest request = authentication.getAuthorizationRequest();
         //massage into a nimble AuthorizationRequest for saving
@@ -73,37 +74,49 @@ public class NimbleOauth2AuthenticationManager implements Oauth2AuthenticationMa
         authenticationDAO.storeAuthentication(userAuthentication);
         authorizationRequestDAO.storeAuthorizationRequest(clientRequest);
 
-
+        log.info("storeOAuth2Authentication: end: authentication=" + authentication + ", auth2Id=" + auth2Id);
         return auth2Authentication;
     }
 
     public NimbleOAuth2Authentication readAuthenticationById(String authenticationId) {
+        if (log.isDebugEnabled()) {
+            log.debug("readAuthenticationById: start: authenticationId=" + authenticationId);
+        }
         //this is a composition object of both the client and user auth
         NimbleOauth2VO base = oAuth2AuthenticationDAO.readAuthenticationById(authenticationId);
         NimbleOAuth2Authentication auth = buildNimbleOAuth2Authentication(base);
         if (auth == null) {
             //log.warn("readAuthenticationByAccessToken: Unable to locate authentication for access token=" + authenticationId);
         }
+        log.info("readAuthenticationById: end: authenticationId=" + authenticationId + ", found=" + (auth != null ? "true" : "false"));
         return auth;
     }
 
     public NimbleOAuth2Authentication readAuthenticationByAccessToken(String accessToken) {
+        if (log.isDebugEnabled()) {
+            log.debug("readAuthenticationByAccessToken: start: accessToken=" + accessToken);
+        }
         //this is a composition object of both the client and user auth
         NimbleOauth2VO base = oAuth2AuthenticationDAO.readAuthenticationForAccessToken(accessToken);
         NimbleOAuth2Authentication auth = buildNimbleOAuth2Authentication(base);
         if (auth == null) {
             log.warn("readAuthenticationByAccessToken: Unable to locate authentication for access token=" + accessToken);
         }
+        log.info("readAuthenticationByAccessToken: end: accessToken=" + accessToken + ", auth=" + auth);
         return auth;
     }
 
     public NimbleOAuth2Authentication readAuthenticationByRefreshToken(String refreshToken) {
+        if (log.isDebugEnabled()) {
+            log.debug("readAuthenticationByRefreshToken: start: refreshToken=" + refreshToken);
+        }
         //this is a composition object of both the client and user auth
         NimbleOauth2VO base = oAuth2AuthenticationDAO.readAuthenticationForRefreshToken(refreshToken);
         NimbleOAuth2Authentication auth = buildNimbleOAuth2Authentication(base);
         if (auth == null) {
             log.warn("readAuthenticationByRefreshToken: Unable to locate authentication for refresh token=" + refreshToken);
         }
+        log.info("readAuthenticationByRefreshToken: end: refreshToken=" + refreshToken + ", auth=" + auth);
         return auth;
     }
 

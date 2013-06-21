@@ -33,40 +33,53 @@ public class JdbcRefreshTokenDAO implements RefreshTokenDAO {
     }
 
     public void storeRefreshToken(OAuth2RefreshToken refreshToken, String authId) {
+        if (log.isDebugEnabled()) {
+            log.debug("storeRefreshToken: start: authId=" + authId + ", token=" + refreshToken.getValue());
+        }
+        int updated = -1;
         NimbleRefreshToken token = createRefreshToken(refreshToken, authId);
         if (token.getId() <= 0) {
+            log.info("storeRefreshToken: insert: authId=" + authId + ", token=" + refreshToken.getValue());
             //need to have an ID to avoid going to the DB to see if the token exists or doing an insert upon
             //failed update.
             //going to create.  The refresh token value should be unique so may want to do a delete here to make sure it
             //is clean.  This *could* cause a fk problem.  Otherwise we *could* have a unique key problem
-            jdbcTemplate.update(insertSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue()},
+            updated = jdbcTemplate.update(insertSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue()},
                     new int[]{Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.VARCHAR});
         } else {
-            jdbcTemplate.update(updateSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue(), token.getId()},
+            log.info("storeRefreshToken: update: authId=" + authId + ", token=" + refreshToken.getValue());
+            updated = jdbcTemplate.update(updateSql, new Object[]{token.getExpiration(), token.getAuthenticationId(), token.getTimesUsed(), token.getValue(), token.getId()},
                     new int[]{Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.INTEGER});
         }
+
+        log.info("storeRefreshToken: end: authId=" + authId + ", token=" + refreshToken.getValue()+", updated="+updated);
 
     }
 
     public OAuth2RefreshToken readRefreshToken(String tokenValue) {
         //will return a NimbleRefreshToken (RowMapper)
         OAuth2RefreshToken auth = null;
+        if (log.isDebugEnabled()) {
+            log.info("readRefreshToken: start: tokenValue=" + tokenValue);
+        }
 
         try {
             auth = jdbcTemplate.queryForObject(selectSql, mapper, tokenValue);
         } catch (EmptyResultDataAccessException e) {
-            if (log.isInfoEnabled()) {
-                log.debug("Failed to find OAuth2RefreshToken for id " + tokenValue);
-            }
+            log.info("Failed to find OAuth2RefreshToken for id " + tokenValue);
         } catch (IllegalArgumentException e) {
             log.error("Could not extract OAuth2RefreshToken for id " + tokenValue);
         }
-
+        if (log.isDebugEnabled()) {
+            log.info("readRefreshToken: end: tokenValue=" + tokenValue + ", retVal=" + auth);
+        }
         return auth;
     }
 
     public void removeRefreshToken(OAuth2RefreshToken token) {
-        jdbcTemplate.update(deleteSql, token.getValue());
+        log.info("removeRefreshToken: start: token=" + token);
+        int deleted = jdbcTemplate.update(deleteSql, token.getValue());
+        log.info("removeRefreshToken: end: token=" + token + ", deleted=" + deleted);
     }
 
     protected int getId(OAuth2RefreshToken refreshToken) {

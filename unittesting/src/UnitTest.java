@@ -176,6 +176,7 @@ public class UnitTest {
     }
 
     private static class OauthImportDataDAO {
+        private String dbName = "apigeerailsdb";
         private JdbcTemplate template;
         private String sql = "SELECT" +
                 "    o_two_refresh_tokens.user_attribute1," +  //nimble_token
@@ -188,15 +189,15 @@ public class UnitTest {
                 "    o_two_refresh_tokens.validitytimestamp," +
                 "    o_two_refresh_tokens.used_count" +
                 " FROM" +
-                "    api_import.o_two_refresh_tokens," +
-                "    api_import.keys," +
-                "    api_import.client_applications," +
-                "    api_import.client_application_label_values" +
+                "    " + dbName + ".o_two_refresh_tokens," +
+                "    " + dbName + ".client_applications," +
+                "    " + dbName + ".keys," +
+                "    " + dbName + ".client_application_label_values" +
                 " WHERE" +
-                "    api_import.o_two_refresh_tokens.clientid = api_import.keys.key" +
-                " AND api_import.keys.client_application_id = api_import.client_applications.id" +
-                " AND api_import.client_applications.id =" +
-                "    api_import.client_application_label_values.client_application_id ;";
+                "    " + dbName + ".o_two_refresh_tokens.clientid = " + dbName + ".keys.key" +
+                " AND " + dbName + ".keys.client_application_id = " + dbName + ".client_applications.id" +
+                " AND " + dbName + ".client_applications.id =" +
+                "    " + dbName + ".client_application_label_values.client_application_id ;";
 
         private OauthImportDataDAO(JdbcTemplate template) {
             this.template = template;

@@ -69,39 +69,46 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<OAuth2AccessToken> {
 
     public OAuth2AccessToken readAccessToken(String tokenValue) {
         NimbleAccessToken accessToken = null;
+        if (log.isDebugEnabled()) {
+            log.info("readAccessToken: start: tokenValue=" + tokenValue);
+        }
 
         try {
             accessToken = jdbcTemplate.queryForObject(selectAccessTokenByTokenIdSql, accessTokenMapper, tokenValue);
         } catch (EmptyResultDataAccessException e) {
-            if (log.isInfoEnabled()) {
-                log.debug("Failed to find access token for token value " + tokenValue);
-            }
+            log.info("Failed to find access token for token value " + tokenValue);
         } catch (IllegalArgumentException e) {
             log.error("Could not extract access token for token value " + tokenValue);
         }
 
-
+        if (log.isDebugEnabled()) {
+            log.info("readAccessToken: end: tokenValue=" + tokenValue + ", retVal=" + accessToken);
+        }
         return accessToken;
     }
 
     public void removeAccessToken(OAuth2AccessToken token) {
-        jdbcTemplate.update(deleteAccessTokenSql, token.getValue());
+        log.info("removeAccessToken: start: token=" + token.getValue());
+        int deleted = jdbcTemplate.update(deleteAccessTokenSql, token.getValue());
+        log.info("removeAccessToken: end: token=" + token.getValue() + ", deleted=" + deleted);
     }
 
     public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication, String authenticationId) {
         NimbleAccessToken accessToken = null;
+        if (log.isDebugEnabled()) {
+            log.debug("getAccessToken: start: authenticationId=" + authenticationId);
+        }
 
         if (authenticationId != null) {
             try {
                 accessToken = jdbcTemplate.queryForObject(selectAccessTokenAuthenticationSql, accessTokenMapper, authenticationId);
             } catch (EmptyResultDataAccessException e) {
-                if (log.isInfoEnabled()) {
-                    log.debug("Failed to find access token for authentication " + authentication);
-                }
+                log.info("Failed to find access token for authentication " + authenticationId);
             } catch (IllegalArgumentException e) {
-                log.error("Could not extract access token for authentication " + authentication);
+                log.error("Could not extract access token for authentication " + authenticationId);
             }
         }
+        log.info("getAccessToken: end: authenticationId=" + authenticationId + ", accessToken=" + (accessToken != null ? accessToken.getValue() : ""));
 
         return accessToken;
     }
@@ -117,10 +124,14 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<OAuth2AccessToken> {
     }
 
     public void storeAccessToken(OAuth2AccessToken base, String authenticationId, OAuth2Authentication authentication) {
+        if (log.isDebugEnabled()) {
+            log.debug("storeAccessToken: start: authId=" + authenticationId + ", token=" + base.getValue());
+        }
+        int updated = -1;
         NimbleAccessToken token = createAccessToken(base, authenticationId);
         int id = token.getId();
         if (id <= 0) {
-            log.debug("Creating storeAccessToken: " + token);
+            log.info("storeAccessToken: insert: authId=" + authenticationId + ", token=" + base.getValue());
 
             MapSqlParameterSource params = new MapSqlParameterSource();
             params.addValue("access_token", token.getValue(), Types.VARCHAR);
@@ -139,18 +150,21 @@ public class JdbcAccessTokenDAO implements AccessTokenDAO<OAuth2AccessToken> {
                 log.error("storeAccessToken: Expected a return ID from insert but none received!");
             }
         } else {
-            log.debug("Updating storeAccessToken: " + id);
-            jdbcTemplate.update(updateAccessTokenSql, new Object[]{token.getValue(), token.getTokenType(), StringUtils.collectionToCommaDelimitedString(token.getScope()),
+            log.info("storeAccessToken: update: authId=" + authenticationId + ", token=" + base.getValue());
+            updated = jdbcTemplate.update(updateAccessTokenSql, new Object[]{token.getValue(), token.getTokenType(), StringUtils.collectionToCommaDelimitedString(token.getScope()),
                     token.getExpiration(), token.getRefreshToken(), authenticationId, token.isEncrypted(), SerializationUtils.serialize(token.getAdditionalInformation()),
                     id
             }, new int[]{Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TINYINT, Types.BLOB, Types.INTEGER});
         }
         token.setId(id);
+        log.info("storeAccessToken: end: authId=" + authenticationId + ", token=" + base.getValue() + ", updated=" + updated);
         return;
     }
 
     public void removeAccessTokenUsingRefreshToken(OAuth2RefreshToken refreshToken) {
-        jdbcTemplate.update(deleteAccessTokenByRefreshTokenSql, refreshToken.getValue());
+        log.info("removeAccessTokenUsingRefreshToken: start: token=" + refreshToken.getValue());
+        int deleted = jdbcTemplate.update(deleteAccessTokenByRefreshTokenSql, refreshToken.getValue());
+        log.info("removeAccessTokenUsingRefreshToken: end: token=" + refreshToken.getValue() + ", deleted=" + deleted);
     }
 
     private NimbleAccessToken createAccessToken(OAuth2AccessToken base, String authenticationId) {

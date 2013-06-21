@@ -25,12 +25,14 @@ public class NimbleTokenServices extends DefaultTokenServices {
 
     public OAuth2AccessToken refreshAccessToken(String refreshTokenValue, AuthorizationRequest request)
             throws AuthenticationException {
+        log.info("refreshAccessToken: start: token=" + refreshTokenValue);
         OAuth2AccessToken accessToken = super.refreshAccessToken(refreshTokenValue, request);
         if (accessToken != null) {
             postProcessRefreshAccessToken(refreshTokenValue, request, accessToken);
         } else {
             log.warn("refreshAccessToken: no exception thrown from super and yet no access token returned.");
         }
+        log.info("refreshAccessToken: end: token=" + refreshTokenValue + ", accessToken=" + accessToken);
         return accessToken;
     }
 

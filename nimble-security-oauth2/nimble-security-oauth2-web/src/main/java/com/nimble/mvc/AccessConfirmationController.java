@@ -1,5 +1,7 @@
 package com.nimble.mvc;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
 import org.springframework.security.oauth2.provider.ClientDetails;
@@ -17,15 +19,21 @@ import java.util.Map;
 @Controller
 @SessionAttributes("authorizationRequest")
 public class AccessConfirmationController {
-
+    protected Log log = LogFactory.getLog(getClass());
     private ClientDetailsService clientDetailsService;
 
     @RequestMapping("/oauth/confirm_access")
     public ModelAndView getAccessConfirmation(Map<String, Object> model) throws Exception {
+        if (log.isDebugEnabled()) {
+            log.debug("getAccessConfirmation: start");
+        }
         AuthorizationRequest clientAuth = (AuthorizationRequest) model.remove("authorizationRequest");
         ClientDetails client = clientDetailsService.loadClientByClientId(clientAuth.getClientId());
         model.put("auth_request", clientAuth);
         model.put("client", client);
+        if (log.isDebugEnabled()) {
+            log.debug("getAccessConfirmation: end: clientAuth=" + clientAuth + ", client=" + client);
+        }
         return new ModelAndView("access_confirmation", model);
     }
 

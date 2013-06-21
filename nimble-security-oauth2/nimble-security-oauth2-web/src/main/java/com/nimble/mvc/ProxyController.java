@@ -32,7 +32,7 @@ import java.util.Map;
  */
 @Controller
 public class ProxyController {
-    protected Log logger = LogFactory.getLog(getClass());
+    protected Log log = LogFactory.getLog(getClass());
     //private Set<String> headersToStrip;
     private String targetDomain;
     private RestOperations restOperations;
@@ -100,9 +100,9 @@ public class ProxyController {
         HttpEntity<String> reqEntity = new HttpEntity<String>(body, extractHeaders(request));
 
         URI uri = new URI(url);
-        if (logger.isDebugEnabled()) {
-            logger.debug("proxy URL: " + url);
-            logger.debug("request: " + reqEntity.toString());
+        if (log.isDebugEnabled()) {
+            log.debug("proxy URL: " + url);
+            log.debug("request: " + reqEntity.toString());
         }
 
         //get the response from the request.  For now assume that the response will always be a string since this is just

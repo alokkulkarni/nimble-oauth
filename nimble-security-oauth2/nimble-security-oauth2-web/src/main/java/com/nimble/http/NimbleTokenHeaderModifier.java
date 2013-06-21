@@ -2,6 +2,8 @@ package com.nimble.http;
 
 import com.nimble.content.ContentModifier;
 import com.nimble.security.core.userdetails.NimbleUser;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +18,7 @@ import java.util.Map;
  * Time: 5:20 PM
  */
 public class NimbleTokenHeaderModifier implements ContentModifier {
+    protected Log log = LogFactory.getLog(getClass());
     public String modify(String input) {
         return input;
     }
@@ -36,6 +39,8 @@ public class NimbleTokenHeaderModifier implements ContentModifier {
                 //servers will likely return a 400 error
                 input.put("Authorization", Collections.unmodifiableList(authList));
             }
+        } else {
+            log.warn("modify: no security context found!");
         }
         return input;
     }

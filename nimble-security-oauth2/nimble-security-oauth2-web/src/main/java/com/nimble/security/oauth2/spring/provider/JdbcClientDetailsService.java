@@ -29,53 +29,32 @@ import java.util.Map;
  * Basic, JDBC implementation of the client details service.
  */
 public class JdbcClientDetailsService implements ClientDetailsService, ClientRegistrationService {
-
     private static final Log logger = LogFactory.getLog(JdbcClientDetailsService.class);
-
-    private ObjectMapper mapper = new ObjectMapper();
-
     private static final String CLIENT_FIELDS_FOR_UPDATE = "name, app_type, description, resource_ids, scope, "
             + "authorized_grant_types, web_server_redirect_uri, authorities, access_token_validity, "
             + "refresh_token_validity, additional_information";
-
     private static final String CLIENT_FIELDS = "client_secret, " + CLIENT_FIELDS_FOR_UPDATE;
-
     private static final String BASE_FIND_STATEMENT = "select client_id, " + CLIENT_FIELDS
             + " from oauth_client_details";
-
     private static final String DEFAULT_FIND_STATEMENT = BASE_FIND_STATEMENT + " order by client_id";
-
     private static final String DEFAULT_SELECT_STATEMENT = BASE_FIND_STATEMENT + " where client_id = ?";
-
     private static final String DEFAULT_INSERT_STATEMENT = "insert into oauth_client_details (" + CLIENT_FIELDS
             + ", client_id) values (?,?,?,?,?,?,?,?,?,?,?,?)";
-
     private static final String DEFAULT_UPDATE_STATEMENT = "update oauth_client_details " + "set "
             + CLIENT_FIELDS_FOR_UPDATE.replaceAll(", ", "=?, ") + "=? where client_id = ?";
-
     private static final String DEFAULT_UPDATE_SECRET_STATEMENT = "update oauth_client_details "
             + "set client_secret = ? where client_id = ?";
-
     private static final String DEFAULT_DELETE_STATEMENT = "delete from oauth_client_details where client_id = ?";
-
-    private RowMapper<NimbleClientDetails> rowMapper = new ClientDetailsRowMapper();
-
-    private String deleteClientDetailsSql = DEFAULT_DELETE_STATEMENT;
-
-    private String findClientDetailsSql = DEFAULT_FIND_STATEMENT;
-
-    private String updateClientDetailsSql = DEFAULT_UPDATE_STATEMENT;
-
-    private String updateClientSecretSql = DEFAULT_UPDATE_SECRET_STATEMENT;
-
-    private String insertClientDetailsSql = DEFAULT_INSERT_STATEMENT;
-
-    private String selectClientDetailsSql = DEFAULT_SELECT_STATEMENT;
-
-    private PasswordEncoder passwordEncoder = NoOpPasswordEncoder.getInstance();
-
     private final JdbcTemplate jdbcTemplate;
-
+    private ObjectMapper mapper = new ObjectMapper();
+    private RowMapper<NimbleClientDetails> rowMapper = new ClientDetailsRowMapper();
+    private String deleteClientDetailsSql = DEFAULT_DELETE_STATEMENT;
+    private String findClientDetailsSql = DEFAULT_FIND_STATEMENT;
+    private String updateClientDetailsSql = DEFAULT_UPDATE_STATEMENT;
+    private String updateClientSecretSql = DEFAULT_UPDATE_SECRET_STATEMENT;
+    private String insertClientDetailsSql = DEFAULT_INSERT_STATEMENT;
+    private String selectClientDetailsSql = DEFAULT_SELECT_STATEMENT;
+    private PasswordEncoder passwordEncoder = NoOpPasswordEncoder.getInstance();
     private JdbcListFactory listFactory;
 
     public JdbcClientDetailsService(DataSource dataSource) {
@@ -92,45 +71,65 @@ public class JdbcClientDetailsService implements ClientDetailsService, ClientReg
     }
 
     public ClientDetails loadClientByClientId(String clientId) throws InvalidClientException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("loadClientByClientId: start: clientId=" + clientId);
+        }
         NimbleClientDetails details;
         try {
             details = jdbcTemplate.queryForObject(selectClientDetailsSql, new ClientDetailsRowMapper(), clientId);
         } catch (EmptyResultDataAccessException e) {
             throw new NoSuchClientException("No client with requested id: " + clientId);
         }
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("loadClientByClientId: end: clientId=" + clientId + ", details=" + details);
+        }
         return details;
     }
 
     public void addClientDetails(ClientDetails cd) throws ClientAlreadyExistsException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("addClientDetails: start: ClientDetails=" + cd);
+        }
+        int updated = -1;
         NimbleClientDetails clientDetails = (NimbleClientDetails) cd;
+
         try {
-            jdbcTemplate.update(insertClientDetailsSql, getFields(clientDetails));
+            updated = jdbcTemplate.update(insertClientDetailsSql, getFields(clientDetails));
         } catch (DuplicateKeyException e) {
             throw new ClientAlreadyExistsException("Client already exists: " + clientDetails.getClientId(), e);
         }
+        logger.info("addClientDetails: end: ClientDetails=" + cd + ", updated=" + updated);
     }
 
     public void updateClientDetails(ClientDetails cd) throws NoSuchClientException {
+        logger.info("updateClientDetails: start: ClientDetails=" + cd);
+
         NimbleClientDetails clientDetails = (NimbleClientDetails) cd;
         int count = jdbcTemplate.update(updateClientDetailsSql, getFieldsForUpdate(clientDetails));
-        if (count != 1) {
+        if (count == 0) {
             throw new NoSuchClientException("No client found with id = " + clientDetails.getClientId());
         }
+        logger.info("updateClientDetails: end: ClientDetails=" + cd + ", updated=" + count);
     }
 
     public void updateClientSecret(String clientId, String secret) throws NoSuchClientException {
+        logger.info("updateClientSecret: start: clientId=" + clientId);
         int count = jdbcTemplate.update(updateClientSecretSql, passwordEncoder.encode(secret), clientId);
         if (count != 1) {
+            logger.info("updateClientSecret: unexpected # rows updated: clientId=" + clientId + ", updated=" + count);
             throw new NoSuchClientException("No client found with id = " + clientId);
         }
+        logger.info("updateClientSecret: end: clientId=" + clientId + ", updated=" + count);
     }
 
     public void removeClientDetails(String clientId) throws NoSuchClientException {
+        logger.info("removeClientDetails: start: clientId=" + clientId);
         int count = jdbcTemplate.update(deleteClientDetailsSql, clientId);
         if (count != 1) {
+            logger.info("removeClientDetails: unexpected # rows updated: clientId=" + clientId + ", updated=" + count);
             throw new NoSuchClientException("No client found with id = " + clientId);
         }
+        logger.info("removeClientDetails: end: clientId=" + clientId + ", updated=" + count);
     }
 
     public List<ClientDetails> listClientDetails() {
