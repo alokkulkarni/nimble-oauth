@@ -19,6 +19,7 @@ import java.util.Map;
  */
 public class NimbleTokenHeaderModifier implements ContentModifier {
     protected Log log = LogFactory.getLog(getClass());
+
     public String modify(String input) {
         return input;
     }
@@ -37,6 +38,8 @@ public class NimbleTokenHeaderModifier implements ContentModifier {
                 authList.add("Nimble token=\"" + user.getNimbleToken() + "\"");
                 //want to overwrite the Authorization if it already existed.  Authorization values cannot be multiple.
                 //servers will likely return a 400 error
+                input.remove("Authorization");
+                input.remove("authorization");
                 input.put("Authorization", Collections.unmodifiableList(authList));
             }
         } else {
