@@ -2,62 +2,30 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>com.nimble</groupId>
+    <artifactId>nimble-core</artifactId>
+    <version>0.0.1</version>
+    <packaging>jar</packaging>
+    <name>Core library for various Nimble components. This may later be split up into different modules.</name>
 
-    <parent>
-        <artifactId>nimble-security-oauth2</artifactId>
-        <groupId>com.nimble.security.oauth2</groupId>
-        <version>0.0.2.SNAPSHOT</version>
-    </parent>
-
-    <artifactId>nimble-security-oauth2-web</artifactId>
-    <packaging>war</packaging>
-
-    <name>nimble-security-oauth2 Web module</name>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring.version>3.2.0.RELEASE</spring.version>
+        <spring.security.oauth.version>1.0.2.RELEASE</spring.security.oauth.version>
+        <spring.security.version>3.2.0.M1</spring.security.version>
+        <codehaus.jackson.mapper.version>1.9.12</codehaus.jackson.mapper.version>
+        <junit.version>4.8.2</junit.version>
+        <mysql.driver.version>5.1.24</mysql.driver.version>
+        <servlet.api.version>2.3</servlet.api.version>
+        <servlet.jstl.version>1.2</servlet.jstl.version>
+        <spring.osgi.range>[3.1.0,4.0.0)</spring.osgi.range>
+        <security.osgi.range>[3.1.0,4.0.0)</security.osgi.range>
+        <skipTests>True</skipTests>
+    </properties>
 
     <dependencies>
 
         <!-- Dependency on the EJB module so we can use it's services if needed -->
-        <!--
-         <dependency>
-           <groupId>com.nimble.security.oauth2</groupId>
-           <artifactId>nimble-security-oauth2-ejb</artifactId>
-           <type>ejb</type>
-           <scope>provided</scope>
-        </dependency>
-  -->
-        <!-- Import the JAX-RS API, we use provided scope as the API is included
-           in JBoss AS 7 -->
-        <!--
-       <dependency>
-          <groupId>org.jboss.spec.javax.ws.rs</groupId>
-          <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
-          <scope>provided</scope>
-       </dependency>
- -->
-        <!-- Import the CDI API, we use provided scope as the API is included
-           in JBoss AS 7 -->
-        <!--
-       <dependency>
-          <groupId>javax.enterprise</groupId>
-          <artifactId>cdi-api</artifactId>
-          <scope>provided</scope>
-       </dependency>
- -->
-        <!-- Import the JPA API, we use provided scope as the API is included
-           in JBoss AS 7 -->
-        <!--
-       <dependency>
-          <groupId>org.hibernate.javax.persistence</groupId>
-          <artifactId>hibernate-jpa-2.0-api</artifactId>
-          <scope>provided</scope>
-       </dependency>
- -->
-        <dependency>
-            <groupId>com.nimble</groupId>
-            <artifactId>nimble-core</artifactId>
-            <version>0.0.1</version>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.security.oauth</groupId>
             <artifactId>spring-security-oauth2</artifactId>
@@ -170,11 +138,13 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.driver.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>3.2.0.RELEASE</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
@@ -197,18 +167,21 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.1.1</version>
-                <configuration>
-                    <!-- Java EE 6 doesn't require web.xml, Maven needs to catch
-                       up! -->
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <repositories>
+        <repository>
+            <id>spring-milestone</id>
+            <name>Spring Framework Milestone Repository</name>
+            <url>http://maven.springframework.org/milestone</url>
+        </repository>
+        <repository>
+            <id>spring-release</id>
+            <name>Spring Framework Release Repository</name>
+            <url>http://maven.springframework.org/release</url>
+        </repository>
+        <repository>
+            <id>java.net</id>
+            <url>http://download.java.net/maven/2</url>
+        </repository>
+    </repositories>
 
 </project>

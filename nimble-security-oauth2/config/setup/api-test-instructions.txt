@@ -1,0 +1,31 @@
+NOTE: The test harness is set up for a specific account.  The script must be run providing a valid access token for this account.
+
+1. Create access token for nimbleapitest@gmail.com/test1pass via oauth environment to be tested
+2. From Python Nimble server directory:
+NIMBLE_API_TOKEN=<your token> NIMBLE_API_HOST=<oauth gateway host> bin/api_tests
+dev
+{
+    "access_token": "b0b09575-a4f3-4b5b-b484-801c9a55c075",
+    "token_type": "bearer",
+    "refresh_token": "53ece4b0-9db0-49fa-a7c3-4454fe5c9da3",
+    "expires_in": 599,
+    "scope": "read write"
+}
+stg
+
+{
+    "access_token": "cc7435d9-b5a4-4c56-ab9f-1fc8034f29ab",
+    "token_type": "bearer",
+    "refresh_token": "6d8a6c25-255a-458d-9d52-17b0d88d2079",
+    "expires_in": 599,
+    "scope": "read write"
+}
+
+prd
+{
+    "access_token": "c2da9139-d0af-4316-9cca-1add8e3e804c",
+    "token_type": "bearer",
+    "refresh_token": "4081d090-6c51-481b-90bb-1f0906ac0710",
+    "expires_in": 599,
+    "scope": "read write"
+}

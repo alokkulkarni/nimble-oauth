@@ -2,30 +2,32 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.nimble.security.oauth2</groupId>
-    <artifactId>nimble-security-oauth2</artifactId>
-    <version>0.0.2.SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>nimble-security-oauth2 application</name>
+    <groupId>com.nimble.test</groupId>
+    <artifactId>nimble-apigee</artifactId>
+    <version>0.0.1</version>
+    <packaging>jar</packaging>
+    <name>Apigee data conversion logic</name>
 
-    <modules>
-        <!--<module>nimble-security-oauth2-ejb</module>-->
+    <!--<modules>
+        &lt;!&ndash;<module>nimble-security-oauth2-ejb</module>&ndash;&gt;
         <module>nimble-security-oauth2-web</module>
         <module>nimble-security-oauth2-ear</module>
-    </modules>
+    </modules>-->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.version>3.2.0.RELEASE</spring.version>
-        <spring.security.oauth.version>1.0.2.RELEASE</spring.security.oauth.version>
         <spring.security.version>3.2.0.M1</spring.security.version>
+        <spring.security.oauth.version>1.0.2.RELEASE</spring.security.oauth.version>
+        <!--
+
         <codehaus.jackson.mapper.version>1.9.12</codehaus.jackson.mapper.version>
         <junit.version>4.8.2</junit.version>
         <mysql.driver.version>5.1.24</mysql.driver.version>
         <servlet.api.version>2.3</servlet.api.version>
         <servlet.jstl.version>1.2</servlet.jstl.version>
         <spring.osgi.range>[3.1.0,4.0.0)</spring.osgi.range>
-        <security.osgi.range>[3.1.0,4.0.0)</security.osgi.range>
+        <security.osgi.range>[3.1.0,4.0.0)</security.osgi.range>-->
         <skipTests>True</skipTests>
     </properties>
 
@@ -115,80 +117,109 @@
                     </plugin>
                 </plugins>
             </build>-->
+            <build>
+
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>com.nimble.test.ApigeeConverter</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+
+            </build>
         </profile>
     </profiles>
 
-    <dependencyManagement>
-        <dependencies>
 
-            <!-- Define the version of the EJB jar so that we don't need to
-               repeat ourselves in every module -->
-            <!--
+    <dependencies>
 
-                        <dependency>
-                            <groupId>com.nimble.security.oauth2</groupId>
-                            <artifactId>nimble-security-oauth2-ejb</artifactId>
-                            <version>0.0.2.SNAPSHOT</version>
-                            <type>ejb</type>
-                        </dependency>
-            -->
+        <!-- Define the version of the EJB jar so that we don't need to
+           repeat ourselves in every module -->
+        <!--
 
-            <!-- Define the version of the WAR so that we don't need to repeat
-               ourselves in every module -->
-            <dependency>
-                <groupId>com.nimble.security.oauth2</groupId>
-                <artifactId>nimble-security-oauth2-web</artifactId>
-                <version>0.0.2.SNAPSHOT</version>
-                <type>war</type>
-                <scope>compile</scope>
-            </dependency>
+                    <dependency>
+                        <groupId>com.nimble.security.oauth2</groupId>
+                        <artifactId>nimble-security-oauth2-ejb</artifactId>
+                        <version>0.0.2.SNAPSHOT</version>
+                        <type>ejb</type>
+                    </dependency>
+        -->
 
-            <!-- Define the version of JBoss' Java EE 6 APIs we want to import.
-               Any dependencies from org.jboss.spec will have their version defined by this
-               BOM -->
-            <!-- JBoss distributes a complete set of Java EE 6 APIs including
-               a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
-               a collection) of artifacts. We use this here so that we always get the correct
-               versions of artifacts. Here we use the jboss-javaee-web-6.0 stack (you can
-               read this as the JBoss stack of the Java EE Web Profile 6 APIs), and we use
-               version 2.0.0.Beta1 which is the latest release of the stack. You can actually
-               use this stack with any version of JBoss AS that implements Java EE 6, not
-               just JBoss AS 7! -->
-            <dependency>
-                <groupId>org.jboss.spec</groupId>
-                <artifactId>jboss-javaee-web-6.0</artifactId>
-                <version>2.0.0.Final</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+        <dependency>
+            <groupId>com.nimble</groupId>
+            <artifactId>nimble-core</artifactId>
+            <version>0.0.1</version>
+            <scope>compile</scope>
+        </dependency>
 
-            <!-- JSR-303 (Bean Validation) Implementation -->
-            <!-- Provides portable constraints such as @Email -->
-            <!-- Hibernate Validator is shipped in JBoss AS 7 -->
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>4.1.0.Final</version>
-                <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+        <!-- Test dependencies -->
 
-            <!-- Test dependencies -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.10</version>
-                <type>jar</type>
-                <scope>test</scope>
-            </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
 
-        </dependencies>
-    </dependencyManagement>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>3.1.4.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>3.1.4.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>3.1.4.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security.oauth</groupId>
+            <artifactId>spring-security-oauth</artifactId>
+            <version>${spring.security.oauth.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
 
     <build>
         <pluginManagement>
@@ -201,29 +232,21 @@
                     <configuration>
                         <source>1.6</source>
                         <target>1.6</target>
-                    </configuration>
-                </plugin>
-                <!-- The JBoss AS plugin deploys your ear to a local JBoss AS
-                   container -->
-                <!-- Due to Maven's lack of intelligence with EARs we need to
-                   configure the jboss-as maven plugin to skip deployment for all modules. We
-                   then enable it specifically in the ear module. -->
-                <plugin>
-                    <groupId>org.jboss.as.plugins</groupId>
-                    <artifactId>jboss-as-maven-plugin</artifactId>
-                    <version>7.0.2.Final</version>
-                    <inherited>true</inherited>
-                    <configuration>
-                        <skip>true</skip>
+                        <debug>true</debug>
+                        <verbose>true</verbose>
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-ear-plugin</artifactId>
-                    <version>2.8</version>
+                    <artifactId>maven-assembly-plugin</artifactId>
                     <configuration>
-                        <unpackTypes>rar,war,ejb</unpackTypes>
-
+                        <archive>
+                            <manifest>
+                                <mainClass>com.nimble.test.ApigeeConverter</mainClass>
+                            </manifest>
+                        </archive>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
                     </configuration>
                 </plugin>
             </plugins>
