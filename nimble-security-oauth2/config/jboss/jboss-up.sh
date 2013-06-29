@@ -115,7 +115,7 @@ else
     if [ $STAY_DOWN -ne 1 ]; then
         #if we got here we then we did not find the process.  Time to (re)start
         echo "(Re)starting JBoss"
-        service jboss restart
+        /sbin/service jboss restart
     fi
 fi
 
