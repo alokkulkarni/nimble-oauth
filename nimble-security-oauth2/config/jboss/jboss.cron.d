@@ -1,0 +1,1 @@
+* * * * * root /etc/jboss-as/jboss-up.sh > /tmp/jboss.cron
