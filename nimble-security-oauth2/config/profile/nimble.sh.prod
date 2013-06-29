@@ -1,8 +1,8 @@
 #todo: these should really not be global env variables.
 DB_MYSQL_USERNAME=landingmaster
 DB_MYSQL_PASSWD=stalin-12345
-DB_MYSQL_URL=jdbc:mysql://mmpwahwtqdl4a8.cpzypip4miag.us-west-2.rds.amazonaws.com/oauthdev
-
+#DB_MYSQL_URL=jdbc:mysql://mmpwahwtqdl4a8.cpzypip4miag.us-west-2.rds.amazonaws.com/oauth
+DB_MYSQL_URL=jdbc:mysql://10.246.22.80/oauth
 alias jb='cd /usr/local/jboss'
 
 export DB_MYSQL_URL DB_MYSQL_USERNAME DB_MYSQL_PASSWD
