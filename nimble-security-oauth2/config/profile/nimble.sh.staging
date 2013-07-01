@@ -1,0 +1,7 @@
+#todo: these should really not be global env variables.
+DB_MYSQL_USERNAME=oauthdev
+DB_MYSQL_PASSWD=oauthdev123
+DB_MYSQL_URL=jdbc:mysql://10.244.19.104:3306/oauthdev
+alias jb='cd /usr/local/jboss'
+
+export DB_MYSQL_URL DB_MYSQL_USERNAME DB_MYSQL_PASSWD

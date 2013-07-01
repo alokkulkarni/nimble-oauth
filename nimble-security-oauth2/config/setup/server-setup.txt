@@ -1,22 +1,32 @@
-0. Install supervisor
-sudo easy_install pip
-sudo pip supervisor
+#1. Install supervisor
+#   sudo easy_install pip
+#   sudo pip install supervisor
 
-Put installation configs in place
 
-1. Place configured jboss-as-7.1.1.Final in /usr/local/
+#2. Put installation configs in place
+#   install /etc/supervisord.conf
+#   install /etc/supervisor/ contents (supervised will look for conf files in subdirs placed here i.e. jboss/XYZ.conf)
+
+3. Place configured jboss-as-7.1.1.Final in /usr/local/
+#i.e. rsync -avc --delete --exclude "tmp/*" --exclude "work/*" --exclude="log/*" /Users/Shared/coding/servers/jboss/jboss-as-7.1.1.Final api2.bill1.ninternal.com:~/
+
 2. Symlink /usr/local/jboss-as-7.1.1.Final /usr/local/jboss
-3. Install nimble.sh to /etc/profile.d
-4. mkdir /etc/jboss-as; place jboss init.d files (conf and .sh) here
-4.1 symlink /etc/init.d/jboss
-5. install /etc/supervisord.conf
-5.1 install /etc/supervisor/ contents (supervised will look for conf files in subdirs placed here i.e. jboss/XYZ.conf)
+3. Install nimble.sh to /etc/profile.d (nimble.sh.[env] -> /etc/profile.d/nimble.sh)
+4. mkdir /etc/jboss-as; place jboss init.d files (.conf and .sh) here
+4.1 sudo ln -s /etc/jboss-as/jboss-as-standalone.sh /etc/init.d/jboss
+
 6. sudo mkdir -p /var/log/jboss-as
    sudo chown jboss:jboss /var/log/jboss-as
+   sudo chown -R jboss:jboss /usr/local/jboss-as-7.1.1.Final
+
+7. Install cron script to make sure JBoss is in correct up/down state
+place jboss-up.sh in /etc/jboss-as
+place jboss.cron.d in /etc/cron.d
+
 
 4. Port 8080 will server content to LB
 5. Port 9990 will server admin console - should be accessible via remote web browser when on VPN
-6. To run: standalone.sh -b 0.0.0.0
+6. To run: sudo service jboss [start|stop|restart|status]
 
 DB:
 1. Import the apigee source data:
